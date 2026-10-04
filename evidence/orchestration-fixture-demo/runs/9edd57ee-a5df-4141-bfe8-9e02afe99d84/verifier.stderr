@@ -1,0 +1,8 @@
+test_negative (__main__.Acceptance.test_negative) ... ok
+test_positive (__main__.Acceptance.test_positive) ... ok
+test_zero (__main__.Acceptance.test_zero) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK

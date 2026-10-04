@@ -1,0 +1,6 @@
+Command: python --version
+Python 3.14.6
+Exit code: 0
+Command: python -c "import sqlite3; c=sqlite3.connect(':memory:'); c.execute('CREATE VIRTUAL TABLE docs USING fts5(body)'); print('SQLite', sqlite3.sqlite_version, 'FTS5 available')"
+SQLite 3.50.4 FTS5 available
+Exit code: 0

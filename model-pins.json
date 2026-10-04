@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "models": {
+    "fast": {
+      "id": "qwen25-coder-7b-int4",
+      "provider_model": "qwen25-coder-7b-int4",
+      "hf_repo": "OpenVINO/Qwen2.5-Coder-7B-Instruct-int4-ov",
+      "hf_revision": "25d797085dbbe41b1aa8d32bc9ab1e35b7ac10f4",
+      "bytes": 4508507072,
+      "file_count": 16,
+      "weights_sha256": "dac6b4bc81ab5b0c555b3d8abbfb0ebe3740d2b97d2a484c4b6561f2a08fd250",
+      "tool_parser": null
+    },
+    "strong": {
+      "id": "qwen3-coder-30b-a3b-int4",
+      "provider_model": "qwen3-coder-30b-a3b-int4",
+      "hf_repo": "OpenVINO/Qwen3-Coder-30B-A3B-Instruct-int4-ov",
+      "hf_revision": "21140c68a63012da511fe50656319e00be2f6542",
+      "bytes": 16344057522,
+      "file_count": 19,
+      "weights_sha256": "03936cfcf2b9edd8d5a492e67eeb90862b7aeaef724b748154ebc2b55fe90d31",
+      "tool_parser": "qwen3coder"
+    }
+  }
+}

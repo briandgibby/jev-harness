@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model": "jev-1.13.0",
+  "api_key_env": "TYPESAFE_API_KEY",
+  "timeout_seconds": 30,
+  "max_input_bytes": 100000,
+  "audit_dir": "audit",
+  "fixture_file": "fixtures.json",
+  "question": {
+    "id": "route",
+    "instructions": "Classify the primary intent of the supplied request. Choose unknown when the intent is unclear or outside the other categories.",
+    "criteria": {
+      "maintenance": "A request to inspect, repair, or maintain physical equipment or facilities.",
+      "admin": "A request about billing, accounts, paperwork, or scheduling that does not request physical repair.",
+      "unknown": "The intent is ambiguous, has conflicting primary purposes, or fits neither maintenance nor admin."
+    }
+  },
+  "policy": {
+    "min_probability": 0.9,
+    "min_margin": 0.2,
+    "review_labels": [
+      "unknown"
+    ]
+  }
+}

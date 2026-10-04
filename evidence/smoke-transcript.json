@@ -1,0 +1,58 @@
+[
+  {
+    "command": "C:\\Python314\\python.exe --version",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 0,
+    "stdout": "Python 3.14.6\n",
+    "stderr": ""
+  },
+  {
+    "command": "C:\\Python314\\python.exe jev_harness.py --help",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 0,
+    "stdout": "usage: jev_harness.py [-h] {init,run,evaluate,replay} ...\n\nA stdlib-only, auditable adapter for TypeSafe Jev classification. Fixture mode\nexercises synthetic plumbing. Live mode is always explicit. Policy decisions\nrecommend acceptance or human review; they perform no action.\n\npositional arguments:\n  {init,run,evaluate,replay}\n    init                Create synthetic examples in an empty directory.\n    replay              Recompute a historical decision without network\n                        access.\n\noptions:\n  -h, --help            show this help message and exit\n",
+    "stderr": ""
+  },
+  {
+    "command": "C:\\Python314\\python.exe jev_harness.py init --directory C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 0,
+    "stdout": "{\"created\":[\"config.json\",\"input.json\",\"fixtures.json\",\"dataset.json\"],\"directory\":\"C:\\\\Users\\\\bdgibby\\\\Documents\\\\Codex\\\\2026-09-22\\\\i-w\\\\work\\\\jev-smoke-phxjf_z9\\\\demo\",\"notice\":\"Synthetic fixture: validates harness plumbing, not Jev accuracy.\",\"operation\":\"init\",\"status\":\"completed\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": "C:\\Python314\\python.exe jev_harness.py run --config C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo\\config.json --input C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo\\input.json --mode fixture",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 0,
+    "stdout": "{\"audit_path\":\"C:\\\\Users\\\\bdgibby\\\\Documents\\\\Codex\\\\2026-09-22\\\\i-w\\\\work\\\\jev-smoke-phxjf_z9\\\\demo\\\\audit\\\\15293e13-5df1-48c1-a9d7-56cecad735b1.jsonl\",\"config_hash\":\"cb3b800219fd9d47b4c7004f59844a187f9f9eae0299eab5b6ba2bf5b4b6e8fd\",\"config_snapshot\":{\"api_key_env\":\"TYPESAFE_API_KEY\",\"audit_dir\":\"audit\",\"endpoint\":\"https://api.typesafe.ai/v1/systemone\",\"fixture_file\":\"fixtures.json\",\"max_input_bytes\":100000,\"model\":\"jev-1.13.0\",\"policy\":{\"min_margin\":0.2,\"min_probability\":0.9,\"review_labels\":[\"unknown\"]},\"question\":{\"criteria\":{\"admin\":\"A request about billing, accounts, paperwork, or scheduling that does not request physical repair.\",\"maintenance\":\"A request to inspect, repair, or maintain physical equipment or facilities.\",\"unknown\":\"The intent is ambiguous, has conflicting primary purposes, or fits neither maintenance nor admin.\"},\"id\":\"route\",\"instructions\":\"Classify the primary intent of the supplied request. Choose unknown when the intent is unclear or outside the other categories.\"},\"schema_version\":1,\"timeout_seconds\":30},\"decision\":{\"confidence\":0.92,\"label\":\"maintenance\",\"margin\":0.97,\"probability\":0.98,\"reasons\":[],\"recommendation_only\":true,\"status\":\"accept\"},\"decision_hash\":\"f5889883b37594ff0d4d49af6068c5642ee948e866aaa4c470993504e1b937a8\",\"elapsed_ms\":7,\"event\":\"completed\",\"harness_version\":\"0.1.0\",\"input_hash\":\"a322cc8c70b6bc30259ae92dbb6eb5f665e06175c45f8b1733641a871f8b31fb\",\"input_snapshot\":{\"id\":\"example-maintenance\",\"state\":\"The lift in Building B is stuck. Please send a maintenance technician.\"},\"mode\":\"fixture\",\"notice\":\"Synthetic fixture: validates harness plumbing, not Jev accuracy.\",\"policy\":{\"min_margin\":0.2,\"min_probability\":0.9,\"review_labels\":[\"unknown\"]},\"policy_hash\":\"4937dc9a86b5d6f06c9b4f28370f9726e922a539f9cfb596d1179e331bc05fde\",\"request\":{\"model\":\"jev-1.13.0\",\"questions\":{\"route\":{\"criteria\":{\"admin\":\"A request about billing, accounts, paperwork, or scheduling that does not request physical repair.\",\"maintenance\":\"A request to inspect, repair, or maintain physical equipment or facilities.\",\"unknown\":\"The intent is ambiguous, has conflicting primary purposes, or fits neither maintenance nor admin.\"},\"instructions\":\"Classify the primary intent of the supplied request. Choose unknown when the intent is unclear or outside the other categories.\",\"type\":\"choice\"}},\"state\":\"The lift in Building B is stuck. Please send a maintenance technician.\"},\"request_hash\":\"bd2d6eab3747fa9c6bf83f86925be8f37fcd8db543ef1a10d6bcaf5ea51ee1f3\",\"response\":{\"answers\":{\"route\":{\"choice\":\"maintenance\",\"confidence\":0.92,\"probabilities\":{\"admin\":0.01,\"maintenance\":0.98,\"unknown\":0.01},\"type\":\"choice\"}},\"model\":\"jev-1.13.0\",\"usage\":{\"input_tokens\":0,\"output_tokens\":0}},\"response_hash\":\"d9142b721adf2cab64be2238f16fc354dec57275d5e1dbb000c24d057bf0c788\",\"source\":\"synthetic_fixture\",\"status\":\"completed\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": "C:\\Python314\\python.exe jev_harness.py replay --record C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo\\audit\\15293e13-5df1-48c1-a9d7-56cecad735b1.jsonl",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 0,
+    "stdout": "{\"audit_path\":\"C:\\\\Users\\\\bdgibby\\\\Documents\\\\Codex\\\\2026-09-22\\\\i-w\\\\work\\\\jev-smoke-phxjf_z9\\\\demo\\\\audit\\\\15293e13-5df1-48c1-a9d7-56cecad735b1.jsonl\",\"decision\":{\"confidence\":0.92,\"label\":\"maintenance\",\"margin\":0.97,\"probability\":0.98,\"reasons\":[],\"recommendation_only\":true,\"status\":\"accept\"},\"harness_version\":\"0.1.0\",\"integrity_scope\":\"Hashes detect inconsistent edits, not forgery; records are not digitally signed.\",\"mode\":\"fixture\",\"network_called\":false,\"notice\":\"Synthetic fixture: validates harness plumbing, not Jev accuracy.\",\"operation\":\"historical_replay\",\"policy_hash\":\"4937dc9a86b5d6f06c9b4f28370f9726e922a539f9cfb596d1179e331bc05fde\",\"request_hash\":\"bd2d6eab3747fa9c6bf83f86925be8f37fcd8db543ef1a10d6bcaf5ea51ee1f3\",\"response_hash\":\"d9142b721adf2cab64be2238f16fc354dec57275d5e1dbb000c24d057bf0c788\",\"status\":\"completed\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": "C:\\Python314\\python.exe jev_harness.py evaluate --config C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo\\config.json --dataset C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo\\dataset.json --mode fixture",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 0,
+    "stdout": "{\"accepted_accuracy\":1.0,\"accepted_coverage\":0.6666666666666666,\"accuracy\":1.0,\"confusion\":{\"admin\":{\"admin\":1,\"maintenance\":0,\"unknown\":0},\"maintenance\":{\"admin\":0,\"maintenance\":1,\"unknown\":0},\"unknown\":{\"admin\":0,\"maintenance\":0,\"unknown\":1}},\"confusion_axes\":{\"columns\":\"predicted\",\"rows\":\"expected\"},\"count\":3,\"harness_version\":\"0.1.0\",\"mode\":\"fixture\",\"notice\":\"Synthetic fixture: validates harness plumbing, not Jev accuracy.\",\"operation\":\"evaluate\",\"results\":[{\"audit_path\":\"C:\\\\Users\\\\bdgibby\\\\Documents\\\\Codex\\\\2026-09-22\\\\i-w\\\\work\\\\jev-smoke-phxjf_z9\\\\demo\\\\audit\\\\ce59362a-00d2-4e63-963d-b71e45b983bc.jsonl\",\"decision\":{\"confidence\":0.92,\"label\":\"maintenance\",\"margin\":0.97,\"probability\":0.98,\"reasons\":[],\"recommendation_only\":true,\"status\":\"accept\"},\"expected_label\":\"maintenance\",\"id\":\"example-maintenance\"},{\"audit_path\":\"C:\\\\Users\\\\bdgibby\\\\Documents\\\\Codex\\\\2026-09-22\\\\i-w\\\\work\\\\jev-smoke-phxjf_z9\\\\demo\\\\audit\\\\ff7fe661-7014-4394-9364-f2c062792d18.jsonl\",\"decision\":{\"confidence\":0.9,\"label\":\"admin\",\"margin\":0.92,\"probability\":0.95,\"reasons\":[],\"recommendation_only\":true,\"status\":\"accept\"},\"expected_label\":\"admin\",\"id\":\"example-admin\"},{\"audit_path\":\"C:\\\\Users\\\\bdgibby\\\\Documents\\\\Codex\\\\2026-09-22\\\\i-w\\\\work\\\\jev-smoke-phxjf_z9\\\\demo\\\\audit\\\\94de0104-facc-4653-8119-97a8d5c52afa.jsonl\",\"decision\":{\"confidence\":0.6,\"label\":\"unknown\",\"margin\":0.55,\"probability\":0.7,\"reasons\":[\"below_min_probability\",\"label_requires_review\"],\"recommendation_only\":true,\"status\":\"review\"},\"expected_label\":\"unknown\",\"id\":\"example-unknown\"}],\"review_count\":1,\"source\":\"synthetic_fixture\",\"status\":\"completed\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": "C:\\Python314\\python.exe jev_harness.py init --directory C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "{\"audit_path\": null, \"code\": \"init_target_not_empty\", \"message\": \"The initialization directory must be empty or absent.\", \"next_action\": \"Choose a new empty directory; init never overwrites files.\", \"status\": \"failed\"}\n"
+  },
+  {
+    "command": "C:\\Python314\\python.exe jev_harness.py run --config C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo\\config.json --input C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-smoke-phxjf_z9\\demo\\input.json --mode live",
+    "cwd": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "{\"audit_path\": \"C:\\\\Users\\\\bdgibby\\\\Documents\\\\Codex\\\\2026-09-22\\\\i-w\\\\work\\\\jev-smoke-phxjf_z9\\\\demo\\\\audit\\\\6a89b60e-e5c3-4acb-9bc9-8a9c0a83e54f.jsonl\", \"code\": \"missing_credential\", \"message\": \"Missing configured credential TYPESAFE_API_KEY.\", \"next_action\": \"Set this environment variable in your shell and retry live mode.\", \"status\": \"failed\"}\n"
+  }
+]

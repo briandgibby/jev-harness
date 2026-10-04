@@ -1,0 +1,10 @@
+# Generated Python state.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Local credentials; keep a shareable example if one is added.
+.env
+.env.*
+!.env.example

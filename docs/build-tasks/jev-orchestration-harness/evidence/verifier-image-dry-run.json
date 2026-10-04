@@ -1,0 +1,42 @@
+{
+  "action": "dry-run",
+  "image": "docker.io/library/python@sha256:b921fe7e7522f828d45197a47656ec465a9b15689b27fa8e1fba2864fca5b967",
+  "pin_source": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness\\orchestrate.py",
+  "platform": "linux/amd64",
+  "local_image_present": true,
+  "evidence_root": "C:\\Users\\bdgibby\\AppData\\Local\\JevHarness\\verifier-image-b921fe7e7522",
+  "evidence_root_exists": false,
+  "dry_run_writes_bytes": 0,
+  "pull_command": "docker pull --platform linux/amd64 docker.io/library/python@sha256:b921fe7e7522f828d45197a47656ec465a9b15689b27fa8e1fba2864fca5b967",
+  "install_writes": [
+    "C:\\Users\\bdgibby\\AppData\\Local\\JevHarness\\verifier-image-b921fe7e7522",
+    "C:\\Users\\bdgibby\\AppData\\Local\\JevHarness\\verifier-image-b921fe7e7522\\pull.stdout.log",
+    "C:\\Users\\bdgibby\\AppData\\Local\\JevHarness\\verifier-image-b921fe7e7522\\pull.stderr.log",
+    "C:\\Users\\bdgibby\\AppData\\Local\\JevHarness\\verifier-image-b921fe7e7522\\install.json",
+    "Docker-managed image store: pinned image manifest, config, listed layers, and engine metadata"
+  ],
+  "registry": {
+    "manifest_bytes": 1745,
+    "config_digest": "sha256:0bd69fb6c83e5b357dd1175bbcb7e42e8dbfb8dde5961a7f942854d64f6b8046",
+    "config_bytes": 4934,
+    "layers": [
+      {
+        "digest": "sha256:26c307b5e35a59ce911f5fde5b9458120ec8734e831ea2da5649a9ad14abfd3d",
+        "bytes": 29780765
+      },
+      {
+        "digest": "sha256:8b8a17e17025d5bde7da2a5e61d9339a5d0ded524a3b3b6911a5cb1ac10c88f5",
+        "bytes": 1293268
+      },
+      {
+        "digest": "sha256:31b5c1dee5393abfbf0de086a7d946dabf1874d396eef15aded5bce00da49535",
+        "bytes": 12335595
+      },
+      {
+        "digest": "sha256:37c73db27fe8094fc54c8d4756edf12423e320b6493f5f6268d671ffbc5c59bc",
+        "bytes": 249
+      }
+    ],
+    "total_registry_artifact_bytes_if_empty_cache": 43416556
+  }
+}

@@ -1,0 +1,4 @@
+# Keep recorded evidence and hash-checked project inputs byte-for-byte.
+* -text whitespace=cr-at-eol
+# Historical run outputs are immutable, including their original whitespace.
+evidence/** whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol

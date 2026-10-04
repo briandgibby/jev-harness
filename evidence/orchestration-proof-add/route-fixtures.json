@@ -1,0 +1,1 @@
+{"fixture-add":{"answers":{"coding_route":{"choice":"fast","confidence":0.84,"probabilities":{"fast":0.91,"strong":0.05,"unclear":0.04},"type":"choice"}},"model":"jev-1.13.0","usage":{"input_tokens":0,"output_tokens":0}}}

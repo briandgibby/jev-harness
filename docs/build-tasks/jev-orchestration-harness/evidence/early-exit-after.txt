@@ -1,0 +1,6 @@
+test_candidate_early_zero_exit_cannot_claim_green (test_orchestrate.DockerDemoIntegrationTest.test_candidate_early_zero_exit_cannot_claim_green) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.913s
+
+OK

@@ -1,0 +1,1 @@
+{"content":"{\"files\": [{\"content\": \"def add(a, b):\\n    return a + b\\n\", \"path\": \"solution.py\"}]}","model":"fixture-fast","source":"synthetic_fixture","usage":null}

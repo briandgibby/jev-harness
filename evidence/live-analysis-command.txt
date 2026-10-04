@@ -1,0 +1,153 @@
+Command: python 'outputs\jev-harness\analyze_probe.py' --directory 'outputs\jev-harness\evidence\live-pilot'
+Working directory: C:\Users\bdgibby\Documents\Codex\2026-09-22\i-w
+Exit code: 0
+
+{
+  "status": "completed",
+  "network_called": false,
+  "calls": 13,
+  "models": [
+    "jev-1.13.0"
+  ],
+  "matches_predeclared_synthetic_label": 13,
+  "accepted": 10,
+  "reviewed": 3,
+  "input_tokens": 5180,
+  "output_tokens": 494,
+  "observed_call_ms": {
+    "min": 369,
+    "median": 437,
+    "max": 536,
+    "mean": 431.61538461538464
+  },
+  "repeated_request_groups": [
+    {
+      "ids": [
+        "baseline",
+        "baseline-repeat-2",
+        "baseline-repeat-3"
+      ],
+      "request_hash": "bd2d6eab3747fa9c6bf83f86925be8f37fcd8db543ef1a10d6bcaf5ea51ee1f3",
+      "observations": 3,
+      "unique_labels": [
+        "maintenance"
+      ],
+      "unique_policy_statuses": [
+        "accept"
+      ],
+      "unique_distributions": 1,
+      "max_probability_range": 0.0
+    },
+    {
+      "ids": [
+        "vague",
+        "vague-repeat"
+      ],
+      "request_hash": "1197bb86048150ec1a6a8c90656d6d6dfc2667335a468cae3d4f6e35f7887183",
+      "observations": 2,
+      "unique_labels": [
+        "unknown"
+      ],
+      "unique_policy_statuses": [
+        "review"
+      ],
+      "unique_distributions": 1,
+      "max_probability_range": 0.0
+    }
+  ],
+  "cases": [
+    {
+      "id": "baseline",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "baseline-repeat-2",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "baseline-repeat-3",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "vague",
+      "label": "unknown",
+      "policy_status": "review",
+      "selected_probability": 0.96,
+      "confidence": 0.94
+    },
+    {
+      "id": "vague-repeat",
+      "label": "unknown",
+      "policy_status": "review",
+      "selected_probability": 0.96,
+      "confidence": 0.94
+    },
+    {
+      "id": "repair-paraphrase-1",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "repair-paraphrase-2",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "admin",
+      "label": "admin",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "admin-paraphrase",
+      "label": "admin",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "schedule-repair",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 1.0,
+      "confidence": 1.0
+    },
+    {
+      "id": "mixed",
+      "label": "unknown",
+      "policy_status": "review",
+      "selected_probability": 0.99,
+      "confidence": 0.98
+    },
+    {
+      "id": "injection-admin",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 0.97,
+      "confidence": 0.95
+    },
+    {
+      "id": "injection-system",
+      "label": "maintenance",
+      "policy_status": "accept",
+      "selected_probability": 0.91,
+      "confidence": 0.86
+    }
+  ],
+  "limitations": "Purposive synthetic sample, including repeats. No production accuracy, calibration, general security, or universal determinism claim. Provider caching unknown; call timing includes client/audit overhead."
+}
+

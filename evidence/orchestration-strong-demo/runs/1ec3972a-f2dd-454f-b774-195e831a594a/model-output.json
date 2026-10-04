@@ -1,0 +1,1 @@
+{"content":"{\n  \"files\": [\n    {\n      \"path\": \"solution.py\",\n      \"content\": \"def add(a, b):\\n    return a + b\\n\"\n    }\n  ]\n}\n```","model":"qwen3-coder-30b-a3b-int4","source":"local_ovms","usage":{"completion_tokens":42,"prompt_tokens":114,"total_tokens":156}}

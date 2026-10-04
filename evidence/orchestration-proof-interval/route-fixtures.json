@@ -1,0 +1,1 @@
+{"fixture-merge-intervals":{"answers":{"coding_route":{"choice":"strong","confidence":0.84,"probabilities":{"fast":0.05,"strong":0.91,"unclear":0.04},"type":"choice"}},"model":"jev-1.13.0","usage":{"input_tokens":0,"output_tokens":0}}}

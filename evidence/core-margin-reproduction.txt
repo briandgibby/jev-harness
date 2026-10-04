@@ -1,0 +1,20 @@
+REPRODUCTION: margin
+
+Exact PowerShell command (same before and after source change):
+@'
+from pathlib import Path
+import importlib.util, json
+s=importlib.util.spec_from_file_location('j',Path('outputs/jev-harness/jev_harness.py')); j=importlib.util.module_from_spec(s); s.loader.exec_module(j)
+config={'question':{'id':'route'},'policy':{'min_probability':.6,'min_margin':.2,'review_labels':[]}}
+response={'answers':{'route':{'choice':'a','probabilities':{'a':.6,'b':.4},'confidence':.8}}}
+decision=j.decide(response,config)
+print(json.dumps(decision,sort_keys=True))
+raise SystemExit(0 if decision['status']=='accept' else 1)
+'@ | python -
+
+Before change: exit 1
+{"confidence": 0.8, "label": "a", "margin": 0.19999999999999996, "probability": 0.6, "reasons": ["below_min_margin"], "recommendation_only": true, "status": "review"}
+
+After change: exit 0
+{"confidence": 0.8, "label": "a", "margin": 0.2, "probability": 0.6, "reasons": [], "recommendation_only": true, "status": "accept"}
+

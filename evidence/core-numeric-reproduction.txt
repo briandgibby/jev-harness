@@ -1,0 +1,21 @@
+REPRODUCTION: numeric
+
+Exact PowerShell command (same before and after source change):
+@'
+from pathlib import Path
+import importlib.util
+p=Path('outputs/jev-harness/jev_harness.py')
+s=importlib.util.spec_from_file_location('j',p); j=importlib.util.module_from_spec(s); s.loader.exec_module(j)
+try:
+    j._number(10**400, 'timeout_seconds', 1, 120)
+except Exception as e:
+    print(type(e).__name__ + ': ' + str(e))
+    raise SystemExit(0 if isinstance(e,j.HarnessError) else 1)
+'@ | python -
+
+Before change: exit 1
+OverflowError: int too large to convert to float
+
+After change: exit 0
+HarnessError: timeout_seconds must be a finite number between 1 and 120.
+

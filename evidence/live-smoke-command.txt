@@ -1,0 +1,7 @@
+Command: python 'outputs\jev-harness\probe_live.py' --dotenv 'C:\Users\bdgibby\Git\signsense-reuse-agent\.env' --key-name JEV_API_KEY --out 'outputs\jev-harness\evidence\live-pilot' --phase smoke
+Working directory: C:\Users\bdgibby\Documents\Codex\2026-09-22\i-w
+Exit code: 0
+
+{"event": "case_completed", "id": "baseline", "purpose": "First watched smoke; clear repair intent.", "expected_label": "maintenance", "matches_expected": true, "decision": {"status": "accept", "label": "maintenance", "reasons": [], "probability": 1.0, "margin": 1.0, "confidence": 1.0, "recommendation_only": true}, "response": {"model": "jev-1.13.0", "answers": {"route": {"type": "choice", "choice": "maintenance", "confidence": 1.0, "probabilities": {"maintenance": 1.0, "unknown": 0.0, "admin": 0.0}}}, "usage": {"input_tokens": 396, "output_tokens": 38}}, "request_hash": "bd2d6eab3747fa9c6bf83f86925be8f37fcd8db543ef1a10d6bcaf5ea51ee1f3", "response_hash": "684150ab95d394492e7c20c3d466075d7d0d5f6019188cca520c387da64e45d3", "elapsed_ms": 437, "audit_path": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness\\evidence\\live-pilot\\audit\\9bd0f243-280c-447c-8323-508fd03ce7c2.jsonl"}
+{"event": "phase_completed", "phase": "smoke", "completed": 1, "report": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\outputs\\jev-harness\\evidence\\live-pilot\\smoke-results.json"}
+

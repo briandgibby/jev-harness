@@ -1,0 +1,4 @@
+Command: python (Join-Path $env:USERPROFILE '.codex\skills\prepare-and-run-build-task\scripts\validate_build_packet.py') outputs\jev-harness\docs\second-brain --strict
+SUMMARY: 0 error(s), 0 warning(s)
+PASS: build packet satisfies the selected validation policy
+Exit code: 0

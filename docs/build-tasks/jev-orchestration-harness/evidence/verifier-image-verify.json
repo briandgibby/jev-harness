@@ -1,0 +1,11 @@
+{
+  "status": "verified",
+  "image": "docker.io/library/python@sha256:b921fe7e7522f828d45197a47656ec465a9b15689b27fa8e1fba2864fca5b967",
+  "platform": "linux/amd64",
+  "local": {
+    "id": "sha256:b921fe7e7522f828d45197a47656ec465a9b15689b27fa8e1fba2864fca5b967",
+    "os": "linux",
+    "architecture": "amd64",
+    "repo_digest": "python@sha256:b921fe7e7522f828d45197a47656ec465a9b15689b27fa8e1fba2864fca5b967"
+  }
+}

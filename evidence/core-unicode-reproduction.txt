@@ -1,0 +1,26 @@
+REPRODUCTION: unicode
+
+Exact PowerShell command (same before and after source change):
+@'
+from pathlib import Path
+import importlib.util, json, uuid
+p=Path('outputs/jev-harness/jev_harness.py')
+s=importlib.util.spec_from_file_location('j',p); j=importlib.util.module_from_spec(s); s.loader.exec_module(j)
+directory=Path('work')/('unicode-reproduction-'+uuid.uuid4().hex)
+j.initialize(directory)
+config=j.load_json(directory/'config.json')
+config['question']['instructions']='\ud800'
+try:
+    j.run_one(config,directory,j.load_json(directory/'input.json'),'fixture')
+except j.HarnessError as error:
+    records=list((directory/'audit').glob('*.jsonl'))
+    print(json.dumps({'error':error.report(),'audit_sizes':[p.stat().st_size for p in records]},sort_keys=True))
+    raise SystemExit(0 if not records else 1)
+'@ | python -
+
+Before change: exit 1
+{"audit_sizes": [0], "error": {"audit_path": null, "code": "invalid_json", "message": "JSON cannot be encoded canonically.", "next_action": "Use valid Unicode and bounded JSON nesting.", "status": "failed"}}
+
+After change: exit 0
+{"audit_sizes": [], "error": {"audit_path": null, "code": "invalid_json", "message": "config contains invalid Unicode.", "next_action": "Replace unpaired Unicode surrogates with valid Unicode text.", "status": "failed"}}
+

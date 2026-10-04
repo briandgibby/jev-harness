@@ -1,0 +1,29 @@
+REPRODUCTION: batch
+
+Exact PowerShell command (same before and after source change):
+@'
+from pathlib import Path
+import importlib.util, json
+p=Path('outputs/jev-harness/jev_harness.py')
+s=importlib.util.spec_from_file_location('j',p); j=importlib.util.module_from_spec(s); s.loader.exec_module(j)
+config={'max_input_bytes':10000,'question':{'criteria':{'a':'A','b':'B'}}}
+dataset={'items':[{'id':'1','state':'x','expected_label':'a'},{'id':'2','state':'y','expected_label':'b'}]}
+calls=[]
+def simulated_run(config, base, value, mode):
+    calls.append(value['id'])
+    if len(calls)==2: raise j.HarnessError('transport_error','Simulated second row failure.','Retry manually.')
+    return {'decision':{'status':'accept','label':'a'},'audit_path':'simulated-first-record.jsonl'}
+j.run_one=simulated_run
+try:
+    j.evaluate(config,Path('.'),dataset,'fixture')
+except j.HarnessError as e:
+    print(json.dumps(e.report(),sort_keys=True))
+    raise SystemExit(0 if e.report().get('evaluation_incomplete') and e.report().get('completed_count')==1 else 1)
+'@ | python -
+
+Before change: exit 1
+{"audit_path": null, "code": "transport_error", "message": "Simulated second row failure.", "next_action": "Retry manually.", "status": "failed"}
+
+After change: exit 0
+{"audit_path": null, "code": "transport_error", "completed_audit_paths": ["simulated-first-record.jsonl"], "completed_count": 1, "evaluation_incomplete": true, "message": "Simulated second row failure.", "mode": "fixture", "next_action": "Retry manually.", "status": "failed", "total_count": 2}
+

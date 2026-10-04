@@ -1,0 +1,7 @@
+{
+  "status": "started",
+  "phase": "smoke",
+  "max_requests": 1,
+  "cases_hash": "ffe97b66b964259389eb8fbe747d15799c80ee187e5449f5d1583567500a08f2",
+  "config_hash": "cb3b800219fd9d47b4c7004f59844a187f9f9eae0299eab5b6ba2bf5b4b6e8fd"
+}

@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "id": "example-maintenance",
+      "state": "The lift in Building B is stuck. Please send a maintenance technician.",
+      "expected_label": "maintenance"
+    },
+    {
+      "id": "example-admin",
+      "state": "Please update the billing contact for our next service invoice.",
+      "expected_label": "admin"
+    },
+    {
+      "id": "example-unknown",
+      "state": "Can you take care of the thing we discussed?",
+      "expected_label": "unknown"
+    }
+  ]
+}

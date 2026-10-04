@@ -1,0 +1,15 @@
+test_candidate_early_zero_exit_cannot_claim_green (test_orchestrate.DockerDemoIntegrationTest.test_candidate_early_zero_exit_cannot_claim_green) ... FAIL
+
+======================================================================
+FAIL: test_candidate_early_zero_exit_cannot_claim_green (test_orchestrate.DockerDemoIntegrationTest.test_candidate_early_zero_exit_cannot_claim_green)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Documents\Codex\2026-09-22\i-w\outputs\jev-harness\test_orchestrate.py", line 402, in test_candidate_early_zero_exit_cannot_claim_green
+    with self.assertRaises(orch.OrchestrationError) as context:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: OrchestrationError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.655s
+
+FAILED (failures=1)
