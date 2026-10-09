@@ -1,0 +1,11 @@
+{
+  "status": "verification_failed",
+  "checks": {
+    "note_matches": false,
+    "draft_matches": false,
+    "exactly_one_save": false,
+    "expected_revision": false
+  },
+  "observation": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-restored\\records\\34c9cccb-4e4b-4f32-ab1f-8cf0355264c3.json",
+  "verification": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-restored\\records\\8a77e665-e437-40a4-9d04-8992bbe975a4.json"
+}

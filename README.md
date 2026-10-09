@@ -51,6 +51,30 @@ The live command requires an interactive terminal and typed `yes`; it makes at m
 
 Current-format evidence includes a watched [rules-only strong-model interval-merge run](evidence/orchestration-proof-interval/runs/87f75c56-e81b-4e12-9676-6f9f9c541921/events.jsonl) with [six-test trusted verdict](evidence/orchestration-proof-interval/runs/87f75c56-e81b-4e12-9676-6f9f9c541921/verifier.stdout), and a watched [experimental Jev-routed fast-model add run](evidence/orchestration-proof-add/runs/54cf2c0e-dc53-417a-bf8f-bb51675d1472/events.jsonl) with [three-test trusted verdict](evidence/orchestration-proof-add/runs/54cf2c0e-dc53-417a-bf8f-bb51675d1472/verifier.stdout). Both replayed with saved evaluator/model/patch/checkout checks at the original workspace. These copied historical records are static archival proof: their nested fixture Git histories and absolute original paths were intentionally not migrated, so use a newly created run for `inspect` and `replay` in this project folder. A separate evaluator audit reproduced a false-green path in which candidate code could exit the old evaluator before tests; the current evaluator runs candidate calls in child processes and requires a trusted test-count verdict. A direct [OpenVINO device query and fast OVMS command line](docs/build-tasks/jev-orchestration-harness/evidence/ovms-device-map.md) map `GPU.1` to Arc Pro B70 and show explicit targeting on the 7B server's port 8766. The controller does not yet bind server PID/device/artifact proof to individual runs. The two models solved different generated tasks, so there is no paired model or Jev-routing quality comparison. The [implementation walkthrough](docs/build-tasks/jev-orchestration-harness/walkthrough.md) records what was observed and what remains unfinished.
 
+## Direct patch broker, verifier, and reconstruction
+
+The direct interfaces reuse the controller's patch parser, file scope, pinned Docker sandbox, and historical replay checks. This fixture path needs no credentials or manually prepared patch file. Run from this repository's root; choose new output directories for each attempt:
+
+```powershell
+python -B orchestrate.py init --directory fixture-task --fixture-complexity complex
+python -B orchestration_tools.py broker --directory fixture-task --fixture-route strong --output fixture-broker --dry-run
+python -B orchestration_tools.py broker --directory fixture-task --fixture-route strong --output fixture-broker
+python -B orchestration_tools.py verify --directory fixture-task --broker-dir fixture-broker --output fixture-verification --dry-run
+python -B orchestration_tools.py verify --directory fixture-task --broker-dir fixture-broker --output fixture-verification
+```
+
+`broker` returns `prepared` with `verified_completion: false`. For real input, replace `--fixture-route` with `--patch-file` pointing to a JSON object containing `files`, each with an allowed `path` and full UTF-8 `content`. It supports only declared existing files and creates a separate checkout, scratch base proof, evaluator snapshot, patch artifact, and receipt. `verify` revalidates these against the task before executing the protected checks; its new evidence directory preserves the exact Docker command, output, exit code, and terminal event. A failed or missing verdict never reports completion.
+
+For a saved completed run, reconstruct its derived checkout from the pinned Git base and recorded patch:
+
+```powershell
+$fixtureRun = python -B orchestrate.py run --directory fixture-task --mode fixture --jev-mode off --route-source baseline | ConvertFrom-Json
+python -B orchestration_tools.py reconstruct --run-dir $fixtureRun.run_dir --output fixture-restored --dry-run
+python -B orchestration_tools.py reconstruct --run-dir $fixtureRun.run_dir --output fixture-restored
+```
+
+Reconstruction proves the result in scratch and validates historical artifacts before publishing a new source tree. It can recover a damaged or missing checkout; it preserves the original run and refuses an existing destination. `tests_rerun: false` identifies historical verification rather than a fresh test run. Keep the pinned Git repository and immutable model, patch, evaluator, restore, and verifier evidence intact. These commands do not replace or delete canonical data. [Recorded local fixture commands and unedited output](docs/build-tasks/jev-orchestration-harness/evidence/phase1-interfaces/transcript.jsonl) cover a six-check interval-merge flow.
+
 ## First run
 
 Use Python **3.14.6**, pinned in `.python-version`. There are no third-party runtime dependencies or installation steps. Run these commands from this directory:
@@ -134,3 +158,50 @@ python jev_harness.py --help
 ```
 
 The tests are under `tests/`; the [walkthrough](docs/walkthrough.md) links the original command outputs and identifies which claims remain unverified. The [implementation plan](docs/implementation_plan.md) explains each file's responsibility.
+
+## Jev Computer Use local fixture
+
+This separate experiment controls one generated browser page: enter approved synthetic text and save it once as a draft in page memory. Rules own execution; `jev-1.13.0` fixture responses are recorded in shadow. No credentials, live provider calls, real application control, or screenshot inference are involved. The current pins support Windows x64, Python 3.14.6, Node v24.18.0, Playwright 1.62.1, and Chromium revision 1234. [Canonical contracts and configuration bounds](docs/PRS-Jev-Orchestration-Harness.md#116-shipped-local-slice).
+
+From the repository root, inspect dependency scope, install the locked packages/matching browser, then run a fresh two-action fixture:
+
+```powershell
+python -B computer_use.py setup --dry-run
+python -B computer_use.py setup
+python -B computer_use.py doctor
+python -B computer_use.py dry-run --directory evidence/ui-demo
+python -B computer_use.py demo --directory evidence/ui-demo --watch
+python -B computer_use.py inspect --directory evidence/ui-demo
+```
+
+Setup touches repository `node_modules` and the user Playwright browser cache. It rejects a different Node version; install the pinned runtime first. Demo generates all task/config/page/Choice state, starts an isolated browser, verifies the exact input, draft, save count, and revision, then shuts down. Use a new directory for every demo. The [recorded slice transcript](docs/build-tasks/jev-orchestration-harness/evidence/computer-use-slice/transcript.jsonl) retains actual command arrays, exit codes, and unedited stdout/stderr, including the watched fixture and tests.
+
+Historical replay works after shutdown:
+
+```powershell
+$verification = Get-ChildItem evidence/ui-demo/records/*.json | Where-Object { (Get-Content $_.FullName -Raw | ConvertFrom-Json).kind -eq 'Verification' } | Select-Object -Last 1
+python -B computer_use.py replay --directory evidence/ui-demo --verification $verification.FullName
+python -B ui_fixture.py reset --directory evidence/ui-demo --output evidence/ui-reset
+```
+
+Reset regenerates empty browser state in a fresh destination with the same task/config; it preserves the old run. A consumed permit cannot act twice. An interrupted action without acknowledgement remains `unknown_outcome` and blocks further effects. Inspect or observe that session for reconciliation, then start a fresh reset; replay never resumes a browser or repeats an action. Consistency hashes do not authenticate records against coordinated forgery.
+
+For direct component operation, generate another fresh directory and keep the service running in one terminal:
+
+```powershell
+python -B ui_fixture.py generate --directory evidence/ui-components
+python -B ui_fixture.py serve --directory evidence/ui-components
+```
+
+In another terminal, observe, prepare and execute one permit, then perform the second step and independently check completion:
+
+```powershell
+python -B ui_observer.py --directory evidence/ui-components
+$grant = python -B computer_use.py broker --directory evidence/ui-components | ConvertFrom-Json
+python -B ui_executor.py --directory evidence/ui-components --permit $grant.permit
+python -B computer_use.py step --directory evidence/ui-components
+python -B ui_verify.py --directory evidence/ui-components
+python -B computer_use.py stop --directory evidence/ui-components
+```
+
+`stop` cancels further actions; close the service terminal after inspection. Configuration owns the port, viewport, headless mode, steps, freshness, action timeout, and run duration within code-enforced bounds. The only accepted objective is `save_local_draft`. Real applications, hosted data permission, Windows/OCR adapters, held-out evaluation, and active Jev action selection remain future gates.

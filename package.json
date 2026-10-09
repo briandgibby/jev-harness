@@ -1,0 +1,6 @@
+{
+  "name": "jev-harness-computer-use",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {"playwright": "1.62.1"}
+}

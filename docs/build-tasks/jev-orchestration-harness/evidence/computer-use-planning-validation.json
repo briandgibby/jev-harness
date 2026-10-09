@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python",
+    "C:\\Users\\bdgibby\\.codex\\skills\\prepare-and-run-build-task\\scripts\\validate_build_packet.py",
+    "docs/build-tasks/jev-orchestration-harness",
+    "--strict",
+    "--require-walkthrough"
+  ],
+  "cwd": "C:\\Users\\bdgibby\\Git\\jev-harness",
+  "exit_code": 0,
+  "stdout": "SUMMARY: 0 error(s), 0 warning(s)\r\nPASS: build packet satisfies the selected validation policy\r\n",
+  "stderr": ""
+}

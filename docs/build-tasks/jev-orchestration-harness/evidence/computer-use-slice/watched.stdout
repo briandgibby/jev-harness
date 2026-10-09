@@ -1,0 +1,27 @@
+{"scope": "One isolated synthetic page; fill one note and save once in page memory. Offline Choice only."}
+{
+  "status": "completed",
+  "checks": {
+    "note_matches": true,
+    "draft_matches": true,
+    "exactly_one_save": true,
+    "expected_revision": true
+  },
+  "observation": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-watched\\records\\e4848c69-d188-4643-91df-e27942e9f16d.json",
+  "verification": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-watched\\records\\6b1a8cb4-c437-4761-b234-c6d37cff56b4.json",
+  "replay": {
+    "status": "completed",
+    "operation": "historical_replay",
+    "ui_actions": 0,
+    "provider_calls": 0,
+    "executions_checked": 2,
+    "integrity_scope": "Consistency hashes are not signatures; records are not adversarially authenticated."
+  },
+  "directory": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-watched",
+  "final_capture": {
+    "path": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-watched\\captures\\08605e46-4590-47da-a996-e787b813d78d.png",
+    "provider_called": false,
+    "sha256": "1b16a623d4c68ac6c4fb7cccd89dffa020a95bb27f8dc07ad060d12b99a72f55",
+    "status": "captured"
+  }
+}

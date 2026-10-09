@@ -1,0 +1,22 @@
+test_isolated_page_blocks_external_resources (tests.test_computer_use.Browser.test_isolated_page_blocks_external_resources) ... FAIL
+
+======================================================================
+FAIL: test_isolated_page_blocks_external_resources (tests.test_computer_use.Browser.test_isolated_page_blocks_external_resources)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_computer_use.py", line 218, in test_isolated_page_blocks_external_resources
+    self.assertEqual(value["network_requests"], [value["url"]])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['http://127.0.0.1:56189/fixture', 'http://127.0.0.1:1/forbidden'] != ['http://127.0.0.1:56189/fixture']
+
+First list contains 1 additional elements.
+First extra element 1:
+'http://127.0.0.1:1/forbidden'
+
+- ['http://127.0.0.1:56189/fixture', 'http://127.0.0.1:1/forbidden']
++ ['http://127.0.0.1:56189/fixture']
+
+----------------------------------------------------------------------
+Ran 1 test in 1.225s
+
+FAILED (failures=1)

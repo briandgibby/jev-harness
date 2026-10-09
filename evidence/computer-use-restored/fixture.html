@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Jev local draft fixture</title>
+<style>body{font:20px system-ui;max-width:700px;margin:60px auto}input,button{font:inherit;margin:16px 0}output{display:block}</style>
+<h1>Jev local draft fixture</h1><p>Synthetic text only. Save changes this page's memory.</p>
+<label for="note">Synthetic note</label><input id="note">
+<button id="save">Save draft</button><output id="draft"></output>
+<script>window.fixture={revision:0,save_count:0};
+document.querySelector('#note').addEventListener('input',()=>window.fixture.revision++);
+document.querySelector('#save').addEventListener('click',()=>{
+document.querySelector('#draft').textContent=document.querySelector('#note').value;
+    window.fixture.save_count++;window.fixture.revision++;});</script></html>

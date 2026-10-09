@@ -1,0 +1,49 @@
+{
+  "status": "inspected",
+  "admission": {
+    "status": "admitted",
+    "config": {
+      "action_timeout_ms": 5000,
+      "freshness_ms": 30000,
+      "headless": false,
+      "max_run_ms": 120000,
+      "max_steps": 2,
+      "port": 18805,
+      "schema_version": 1,
+      "viewport": {
+        "height": 600,
+        "width": 900
+      }
+    },
+    "task": {
+      "note": "Synthetic Jev draft",
+      "objective": "save_local_draft",
+      "schema_version": 1,
+      "variant": "clean"
+    },
+    "config_file_hash": "af2d5d72e4508e577c6315605ef980bae24e451c69adb406ba89d48b8c8492fa",
+    "task_file_hash": "40ae7476f191352269f454c03143eea77b40453a8e69a6692a4917c7bb39f4bb",
+    "fixture_file_hash": "20bbc2507c13a03db041e4c900c1ba8b1e39813b28fbab47d7d76168a5953a37"
+  },
+  "intents": [
+    "evidence\\computer-use-restored\\attempts\\2182bb43-07c4-4bce-b85a-9c741914691a.intent.json",
+    "evidence\\computer-use-restored\\attempts\\57a6a874-f782-4bf1-a3e5-83dd9b6fb982.intent.json"
+  ],
+  "records": [
+    "evidence\\computer-use-restored\\records\\01ea7d05-d8f9-4c08-958b-265f1e24257d.json",
+    "evidence\\computer-use-restored\\records\\118b79e4-a149-4a8c-b9bb-cd2291565650.json",
+    "evidence\\computer-use-restored\\records\\1cc49984-e02a-44b1-8228-ea1453207bc2.json",
+    "evidence\\computer-use-restored\\records\\2182bb43-07c4-4bce-b85a-9c741914691a.json",
+    "evidence\\computer-use-restored\\records\\34c9cccb-4e4b-4f32-ab1f-8cf0355264c3.json",
+    "evidence\\computer-use-restored\\records\\4a818115-147c-4a50-b638-86be6f47a374.json",
+    "evidence\\computer-use-restored\\records\\4e7d2728-4ce6-4337-9a08-a9d7a5bc9086.json",
+    "evidence\\computer-use-restored\\records\\50b8527f-4f4d-40ca-a87b-1ce38a775486.json",
+    "evidence\\computer-use-restored\\records\\57a6a874-f782-4bf1-a3e5-83dd9b6fb982.json",
+    "evidence\\computer-use-restored\\records\\6dc33fca-d8a9-4b39-8d23-0ba45361205d.json",
+    "evidence\\computer-use-restored\\records\\8a77e665-e437-40a4-9d04-8992bbe975a4.json",
+    "evidence\\computer-use-restored\\records\\a1862bf1-c9a1-48e2-8714-895b7834cf97.json",
+    "evidence\\computer-use-restored\\records\\a48eccf0-6f3d-4502-b0f1-5851f86ecbf4.json",
+    "evidence\\computer-use-restored\\records\\d134fc87-0282-4846-8f18-3c7662477f91.json",
+    "evidence\\computer-use-restored\\records\\f6efc8ad-3f39-49bd-83d9-eef33ec25181.json"
+  ]
+}

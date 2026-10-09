@@ -1,0 +1,22 @@
+test_cancel (tests.test_computer_use.Browser.test_cancel) ... ok
+test_changed_verification_cannot_claim_completion (tests.test_computer_use.Browser.test_changed_verification_cannot_claim_completion) ... ok
+test_complete_and_replay_without_browser_or_provider (tests.test_computer_use.Browser.test_complete_and_replay_without_browser_or_provider) ... ok
+test_duplicate_and_concurrent_permit (tests.test_computer_use.Browser.test_duplicate_and_concurrent_permit) ... ok
+test_expired_wrong_session_and_permit_path (tests.test_computer_use.Browser.test_expired_wrong_session_and_permit_path) ... ok
+test_isolated_page_blocks_external_resources (tests.test_computer_use.Browser.test_isolated_page_blocks_external_resources) ... ok
+test_missing_permit (tests.test_computer_use.Browser.test_missing_permit) ... ok
+test_reset_restores_empty_state (tests.test_computer_use.Browser.test_reset_restores_empty_state) ... ok
+test_stale_state (tests.test_computer_use.Browser.test_stale_state) ... ok
+test_step_cap (tests.test_computer_use.Browser.test_step_cap) ... ok
+test_unknown_outcome_after_effect_never_repeats (tests.test_computer_use.Browser.test_unknown_outcome_after_effect_never_repeats) ... ok
+test_unsupported_argument_and_missing_audit (tests.test_computer_use.Browser.test_unsupported_argument_and_missing_audit) ... ok
+test_config_bounds_and_unknown_fields (tests.test_computer_use.Contracts.test_config_bounds_and_unknown_fields) ... ok
+test_dry_run_writes_nothing (tests.test_computer_use.Contracts.test_dry_run_writes_nothing) ... ok
+test_failed_serve_is_failed_command (tests.test_computer_use.Contracts.test_failed_serve_is_failed_command) ... ok
+test_reset_retains_custom_valid_configuration (tests.test_computer_use.Contracts.test_reset_retains_custom_valid_configuration) ... ok
+test_ambiguous_hidden_disabled_injection (tests.test_computer_use.FixtureVariants.test_ambiguous_hidden_disabled_injection) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 19.361s
+
+OK

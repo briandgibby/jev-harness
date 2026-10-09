@@ -1046,7 +1046,8 @@ def inspect(run_dir: Path) -> dict:
 
 
 def _assert_completed_artifacts(run_dir: Path, config: dict, task: dict,
-                                events: list[dict], routed: dict) -> None:
+                                events: list[dict], routed: dict,
+                                reconstructed_checkout: Path | None = None) -> None:
     names = [row.get("event") for row in events]
     if names != ["started", "evaluator_snapshotted", "routed", "restore_proven",
                  "model_completed", "patch_applied", "verified", "completed"]:
@@ -1067,9 +1068,10 @@ def _assert_completed_artifacts(run_dir: Path, config: dict, task: dict,
             evaluator_event.get("path") != str(evaluator)):
         fail("record_integrity_failed", "The evaluator snapshot event is inconsistent.",
              "Use the original run record.")
-    checkout = run_dir / "checkout"
+    recorded_checkout = run_dir / "checkout"
+    checkout = reconstructed_checkout if reconstructed_checkout is not None else recorded_checkout
     scratch = run_dir / "restore-proof"
-    if (restore.get("checkout") != str(checkout) or restore.get("scratch") != str(scratch) or
+    if (restore.get("checkout") != str(recorded_checkout) or restore.get("scratch") != str(scratch) or
             not checkout.is_dir() or not scratch.is_dir()):
         fail("record_integrity_failed", "The completed run checkout or restore proof is missing.",
              "Restore the original run artifacts.")
@@ -1122,7 +1124,7 @@ def _assert_completed_artifacts(run_dir: Path, config: dict, task: dict,
                  "Restore the original isolated checkout and patch evidence.")
 
 
-def replay(run_dir: Path) -> dict:
+def replay(run_dir: Path, *, reconstructed_checkout: Path | None = None) -> dict:
     run_dir = run_dir.resolve()
     config = validate_config(load_json(run_dir / "config.snapshot.json"))
     task = load_json(run_dir / "task.snapshot.json")
@@ -1159,7 +1161,8 @@ def replay(run_dir: Path) -> dict:
         fail("record_integrity_failed", "The saved route differs from recomputed policy.",
              "Inspect the original run record.")
     if record_status == "completed":
-        _assert_completed_artifacts(run_dir, config, task, events, routed)
+        _assert_completed_artifacts(run_dir, config, task, events, routed,
+                                    reconstructed_checkout)
         if (len(events) < 2 or events[-2]["event"] != "verified" or
                 events[-1].get("verified_completion") is not True):
             fail("record_integrity_failed", "Completion lacks a preceding trusted verification.",

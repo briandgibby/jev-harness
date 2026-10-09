@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "platform": "win32-x64",
+  "node_version": "v24.18.0",
+  "playwright_version": "1.62.1",
+  "chromium_revision": "1234",
+  "chromium_version": "151.0.7922.34",
+  "chromium_executable_sha256": "409805a16d6416087e6b2f778df1cf8f7bbb267d6b99f6b5bb0a618eace234f2"
+}

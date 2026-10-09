@@ -3,7 +3,109 @@
 
 ## Outcome
 
-The one-task CLI, two pinned local-model registrations, Windows OVMS setup, bounded local client, and Docker verifier now exist. A negative test reproduced an evaluator false green from candidate `os._exit(0)`; the same test passed after candidate calls moved to subprocesses and a trusted nonzero-test verdict became mandatory. Current-format fixture, watched 30B rules-only, and watched experimental Jev-routed 7B runs each passed protected tests and artifact-aware replay. The full suite passed 96 tests. A direct OpenVINO query maps the fast server's targeted `GPU.1` to Arc Pro B70, with a local 7B coding response through that server. Release 1 remains partial: no paired same-task routing study, controller-side server/device/artifact receipt, general task import or broker CLI, and no Jev promotion gate. [Canonical PRD](../../PRD-Jev-Orchestration-Harness.md), [canonical PRS](../../PRS-Jev-Orchestration-Harness.md), [plan](implementation_plan.md), [checklist](task_checklist.md), [execution brief](agent_prompt.md). (JOH-1–JOH-8)
+The one-task CLI, two pinned local-model registrations, Windows OVMS setup, bounded local client, and Docker verifier now exist. A negative test reproduced an evaluator false green from candidate `os._exit(0)`; the same test passed after candidate calls moved to subprocesses and a trusted nonzero-test verdict became mandatory. Current-format fixture, watched 30B rules-only, and watched experimental Jev-routed 7B runs each passed protected tests and artifact-aware replay. The historical suites passed 96 and 115 tests; the authorized Jev Computer Use local slice below passed 132 tests with real Chromium integration. A direct OpenVINO query maps the fast server's targeted `GPU.1` to Arc Pro B70, with a local 7B coding response through that server. Release 1 remains partial: no paired same-task routing study, controller-side server/device/artifact receipt, general task import or general tool broker, and no Jev promotion gate. [Canonical PRD](../../PRD-Jev-Orchestration-Harness.md), [canonical PRS](../../PRS-Jev-Orchestration-Harness.md), [plan](implementation_plan.md), [checklist](task_checklist.md), [execution brief](agent_prompt.md). (JOH-1–JOH-8)
+
+## Local Phase 1 continuation, 2026-10-04
+
+The user selected Jev Orchestration Harness and local fixture work, with no additional requirements at this time. Live inference, downloads, and later promotion decisions remain open. The checkout started clean on `main`, with a successful one-remote GitHub Sync preflight. Before modifying tracked files, their bytes were backed up and restored into scratch; SHA-256 comparisons matched all eight planned files.
+
+| Changed file | Responsibility and reason |
+| --- | --- |
+| NEW `orchestration_tools.py` | Exposes `broker`, `verify`, and `reconstruct` directly, each with `--dry-run`. Reuses the controller's validation, patch application, archive, Docker sandbox, verdict, and historical replay code. The verifier ledger binds task/config, broker receipt, checkout, and evaluator hashes before Docker starts. |
+| MODIFY `orchestrate.py` | Adds the internal `reconstructed_checkout` argument to historical artifact validation/replay. Recovery validates a regenerated tree against original evidence even when the recorded checkout is damaged or missing. Ordinary CLI replay retains its existing behavior. |
+| NEW `tests/test_orchestration_tools.py` | Adds 19 checks for generated first run, allowed effects, source preservation, dry-run side effects, tampering, failed/missing verdicts, mutation during checks, damaged/missing checkout recovery, and a real pinned Docker invocation. |
+| MODIFY `README.md` | Documents shipped direct commands and prepared versus verified versus reconstructed status. |
+| MODIFY canonical PRD/PRS | Records the bounded direct interfaces and current Git state without declaring general tool permits, model identity binding, or promotion complete. |
+| MODIFY packet plan/checklist/brief/walkthrough | Tracks this slice, fixes the relocated root/test commands, and links fresh local evidence. |
+| NEW generated fixture and evidence directories | Hold disposable base/patch projections and immutable receipts, command streams, snapshots, ledgers, and protected verifier outputs. `init` and the direct commands generate them; no source file was manually placed for first success. |
+
+The exact command arrays, exit codes, working directory, and unedited streams are in [transcript.jsonl](evidence/phase1-interfaces/transcript.jsonl). From the repository root, the manual flow used `orchestrate.py init --fixture-complexity complex`, `orchestration_tools.py broker --fixture-route strong`, and `verify` with separate fresh outputs, each preceded by its dry-run. Broker reported `prepared` and `verified_completion: false`. The direct verifier's [stdout](../../../evidence/phase1-interfaces-verify-final/verifier.stdout) was:
+
+```text
+{"errors": 0, "failures": 0, "schema_version": 1, "tests_run": 6}
+```
+
+Its [unedited stderr](../../../evidence/phase1-interfaces-verify-final/verifier.stderr) ended:
+
+```text
+Ran 6 tests in 0.411s
+
+OK
+```
+
+A separate rules-only fixture controller run completed, replayed offline, and reconstructed into `evidence/phase1-interfaces-restored` with tree hash `8174bae4208e56b5e2ed824b54e99dd25a7a57eab2bc39f1b1170f2084fd458c`. Reconstruction reports `tests_rerun: false`; it proves historical artifact integrity and regeneration rather than rerunning checks. The second reconstruction attempt to that same destination exited 1 with `destination_exists` and preserved it. Tests independently exercise damaged and missing checkouts, tampered patch refusal before publication, and unchanged canonical source/evidence.
+
+The post-change command `python -B -m unittest discover -s tests -p 'test_*.py' -v` exited 0. Its [full unedited output](evidence/phase1-interfaces/tests-final.stderr) ended:
+
+```text
+Ran 115 tests in 23.194s
+
+OK
+```
+
+No live model call, model install, schedule, commit, or publication ran in this continuation. Next work is selected from the remaining checklist after reviewing this local fixture result. The bounded broker supports full-file replacements, not a general tool/one-use StepPlan permit system. Reconstruction publishes only a fresh tree; automatic replacement/deletion and recovery of incomplete inference evidence are not implemented.
+
+## Historical Jev Computer Use planning follow-up
+
+Before implementation authorization, the user's follow-up requested consideration of computer use. The canonical PRD adds conditional capability JOH-9; [PRS section 11](../../PRS-Jev-Orchestration-Harness.md#11-conditional-jev-computer-use-joh-9) specifies the proposed observation/action/permit records, direct interfaces, policy boundaries, independent completion, interruption handling, privacy, and zero-action replay. The implementation plan adds proposed files/dependency order; the checklist adds unexecuted CU-01 through CU-08; the requirements pointer and execution brief carry this scope forward.
+
+That planning-only revision modified documentation only. It introduced no UI control, dependency installation, live request, or computer-use implementation claim; the subsequently authorized slice is recorded below. TypeSafe's inspected [model documentation](https://docs.typesafe.ai/models) identifies the pinned Jev version as text-only. The proposed observer therefore produces structured UI text; optional pixel perception and Windows desktop automation require their own feasibility checks. Browser versus real Windows app and hosted-text permission were requested from the user; a local browser fixture with offline responses is the proposed starting assumption pending those decisions.
+
+The current Docker coding verifier proves file-task checks, not UI-task completion. The existing 115-test output remains coding/interface evidence and is not a computer-use evaluation. Future live gates require a selected workflow, authorized effects/data, actual backend pins, independent postconditions, and a tested reset/restore path. The [planning validation record](evidence/computer-use-planning-validation.json) retains the actual validator command and unedited output for this document revision.
+
+## Jev Computer Use first slice, 2026-10-04
+
+The user then authorized the proposed first slice. It controls an isolated, unauthenticated synthetic Chromium page and enters/saves exactly one approved draft. Rules own execution; the existing Jev adapter records offline Choice responses in shadow. Each action links a complete observation, candidate mapping, audit, and one-use permit. The single-owner service reobserves before acting, fsyncs intent before effects, and writes acknowledgement afterward. A storage failure after an actual fill leaves `unknown_outcome` and blocks the next action. No live model/provider call, real application write, commit, publication, or schedule ran.
+
+| Changed file | Purpose and reason |
+| --- | --- |
+| NEW `computer_use.py` | Pinned setup/doctor, dry-run/demo, admission, rules broker/step, inspect/stop and historical replay. Demo owns startup/cleanup from a fresh directory. |
+| NEW `ui_fixture.py` | Generate page, task/config and offline responses; serve the fixture; regenerate reset into a fresh directory without replacing old evidence. |
+| NEW `ui_common.py` | Own strict schemas/bounds, records, deterministic candidates/postconditions and direct local transport. |
+| NEW `ui_browser.cjs` | Own isolated browser/session, local authenticated RPC, scope/actionability/freshness checks, serialized permit consumption, durable intent/result, unknown-outcome refusal and local evidence capture. |
+| NEW `ui_observer.py`, `ui_executor.py`, `ui_verify.py` | Independent direct CLIs for observation, one-permit execution and fresh completion checks. |
+| NEW `computer-use-pins.json`, `package.json`, `package-lock.json` | Own exact supported runtime/browser identities and binary hash, pinned library dependency and integrity metadata. |
+| NEW `tests/test_computer_use.py` | 17 meaningful contract and real-browser integration checks; storage fault injection is confined to a test child, with no production fault API. |
+| MODIFY `.gitignore` | Ignore rebuildable npm state and ephemeral RPC tokens. |
+| MODIFY README, canonical PRD/PRS and packet | Record actual scope, configuration, commands/evidence and remaining pilot/promotion decisions. |
+| NEW fixture/evidence outputs | Retain task/config, observation/action/permit/shadow/audit, intent/result/event records and local captures. No manually placed state was needed. |
+
+All exact command arrays, cwd, exit codes and unedited streams are in [transcript.jsonl](evidence/computer-use-slice/transcript.jsonl). Shipped setup was preceded by its no-write scope report. It rebuilt two locked npm packages and verified the already cached Chromium executable; an empty-cache browser download and a second clean machine were not exercised. `doctor` verified Windows x64, Node v24.18.0, Playwright 1.62.1, Chromium revision 1234/version 151.0.7922.34 and the pinned executable hash.
+
+The command `python -B computer_use.py demo --directory evidence/computer-use-watched --port 18805 --watch` opened the bounded fixture, recorded local screenshots, performed two actions, passed four independent postconditions, and shut down. Its [unedited output](evidence/computer-use-slice/watched.stdout) includes `status: completed`, all four checks true and replay with `ui_actions: 0`, `provider_calls: 0`. The [final local capture](../../../evidence/computer-use-watched/captures/08605e46-4590-47da-a996-e787b813d78d.png) was visually inspected: the note and saved draft both read `Synthetic Jev draft`. Images never reached Jev.
+
+`ui_fixture.py reset --directory evidence/computer-use-watched --output evidence/computer-use-restored` regenerated the same validated task/config into scratch. The direct observer proved empty note/draft and zero revision/saves. The direct verifier first exited 1 with `verification_failed`; broker, executor, step and verifier then completed the reset fixture. Stop prevented future actions; historical replay after service exit checked both executions with zero UI actions/provider calls. Original evidence remained. [Reset output](evidence/computer-use-slice/reset.stdout), [initial observation](evidence/computer-use-slice/observer.stdout), [initial failed check](evidence/computer-use-slice/verify-before.stdout), [completed check](evidence/computer-use-slice/verify.stdout), [offline replay](evidence/computer-use-slice/replay-after-shutdown.stdout).
+
+Two regressions were reproduced before repair: reset discarded a valid custom freshness setting, and failed serve returned success. The [same failing command/output](evidence/computer-use-slice/reset-serve-before.stderr) is retained; both cases are in the passing targeted suite. The test fault loader initially used Windows backslashes in Node options and was corrected to an absolute forward-slash path. The egress assertion initially confused an attempted resource with an allowed request; observation now records attempts, allowed requests and failed requests separately, and the forbidden resource is proven failed. These diagnostic outputs are retained; no production effect permission was widened.
+
+`python -B -m unittest tests.test_computer_use -v` exited 0. Its [unedited output](evidence/computer-use-slice/targeted.stderr) ends:
+
+```text
+Ran 17 tests in 19.361s
+
+OK
+```
+
+After the final code change, `python -B -m unittest discover -s tests -p 'test_*.py' -v` exited 0. Its [unedited output](evidence/computer-use-slice/suite.stderr) ends:
+
+```text
+Ran 132 tests in 41.895s
+
+OK
+```
+
+| Local-slice acceptance | Observed evidence |
+| --- | --- |
+| Empty-state actual UI input/output | Watched two-action demo, four fresh postconditions, inspected final capture. |
+| Direct components and independent false-completion refusal | Observer/broker/executor/step/verify commands; pre-effect verification failed visibly. |
+| One-use, scope, freshness and caps | Targeted tests include concurrent/reused/stale/expired permits, wrong session/surface, hidden/disabled/ambiguous/injected controls, unauthorized argument, cap/cancel and missing audit/permit. |
+| Unknown outcome without repetition | Test child fails execution acknowledgement storage after real fill; retained intent has no result, revision stays one, next action refuses. |
+| Egress boundary and fixture-only inference | Forbidden resource appears as failed and never allowed; Jev audit mode is fixture and execution authority is rules. |
+| Tested restore/reset | Regenerated scratch fixture starts empty with matching task/config and completes independently; old run remains. |
+| Zero-effect historical replay | Replay after browser-service exit checked two executions with zero UI/provider calls. |
+| Reconciled packet/governance | Validation streams retained with the slice transcript after final documentation edits. |
+
+Remaining gates: a named real application/workflow and permitted effects, data policy/hosted-text authorization, test access, independent completion and tested restore, owner error/review/budget preferences, actual viewport/session perturbations, Windows/OCR adapter feasibility, held-out shadow evaluation and promotion. Fixture responses prove plumbing rather than Jev decision quality. Current executable pins support only this evidenced Windows x64 configuration. Records use consistency hashes rather than adversarial signatures. No old session is resumed after interruption; observe/inspect, then reset into a new directory.
 
 ## Actual design and changed files
 
@@ -24,7 +126,7 @@ The one-task CLI, two pinned local-model registrations, Windows OVMS setup, boun
 
 ## Plan deviations
 
-The planned `git apply` patch contract became strict JSON full-content replacement of declared existing files. The planned `doctor`, `prepare`, `start`, `smoke`, and `generate` commands in `local_model.py` were not implemented; pinned setup is through direct PowerShell CLIs, and `local_model.py` exposes only `probe`. The controller has no `--task` import option or direct broker/verifier command. A clean rules-only `--jev-mode off` arm was added after discovering that the baseline otherwise always called Jev. `model-pins.json` now removes duplicate model pin ownership across controller and setup. The false-green evaluator bug forced a trusted-verdict contract; replay now snapshots and validates evaluator/model/patch/checkouts. Earlier completed run records do not satisfy these later checks. These changes are reflected in the [plan](implementation_plan.md). (JOH-1–JOH-8)
+The planned `git apply` patch contract became strict JSON full-content replacement of declared existing files. The planned `doctor`, `prepare`, `start`, `smoke`, and `generate` commands in `local_model.py` were not implemented; pinned setup is through direct PowerShell CLIs, and `local_model.py` exposes only `probe`. The controller has no `--task` import option; bounded direct broker/verifier/reconstruction interfaces now live in `orchestration_tools.py`. A clean rules-only `--jev-mode off` arm was added after discovering that the baseline otherwise always called Jev. `model-pins.json` now removes duplicate model pin ownership across controller and setup. The false-green evaluator bug forced a trusted-verdict contract; replay now snapshots and validates evaluator/model/patch/checkouts. Earlier completed run records do not satisfy these later checks. These changes are reflected in the [plan](implementation_plan.md). (JOH-1–JOH-8)
 
 ## Verification evidence
 
@@ -100,14 +202,14 @@ Verifier image preparation is shipped as `pwsh -NoProfile -File tools/prepare_ve
 | JOH-1 empty-state full fixture | Demonstrated: [current fixture run](../../../evidence/orchestration-proof-interval/runs/01e95f48-8520-4faf-a3e6-46903d58b46a/events.jsonl) has six-test verdict and passed replay. Verifier-image preparation command is shipped; its install action was not needed on this host. |
 | JOH-2 bounded Jev decision | Partial: strict route packet and clean rules-only control exist; profile lifecycle/promotion is absent. |
 | JOH-3 two pinned local models | Partial: two pinned registrations and separate 7B/30B watched coding runs. [Direct B70 mapping/explicit fast target](evidence/ovms-device-map.md) plus 7B response support bounded GPU inference. Paired same-task trial and controller-side installed artifact/device binding remain open. |
-| JOH-4 bounded one-task effects | Partial: isolated checkout and Docker limits observed; general broker and later reconstruction command absent. |
+| JOH-4 bounded one-task effects | Partial: isolated checkout and Docker limits observed; bounded direct broker/verifier and scratch-proven reconstruction are evidenced above. General tool permits remain open. |
 | JOH-5 trustworthy completion | Demonstrated for generated tasks: false green reproduced and fixed; current fixture, 30B, and 7B runs have trusted verdicts and current replay; [96-test suite](evidence/tests-final.txt) passed. Non-test acceptance criteria and general task import remain open. |
 | JOH-6 audit and replay | Demonstrated for current-format generated tasks: event/audit/replay check saved evaluator/model/patch/checkouts. Old records fail the newer contract; migration policy and general tasks remain open. |
-| JOH-7 provider/secret admission | Partial: loopback local client and Jev summary projection exist; direct effect broker and broader source classes absent. |
+| JOH-7 provider/secret admission | Partial: loopback local client, Jev summary projection, and bounded direct full-file broker exist; general tool permits and broader source classes remain open. |
 | JOH-8 empirical route promotion | Open: no held-out paired routing study or promotion gate. |
 
 ## Operational steps, known issues, and reviewer quick check
 
-Use `tools/prepare_verifier.ps1 -Action dry-run`, then `verify` or a watched `install` if absent, before `init` on a new empty directory, `dry-run`, and `demo`. Git and Python 3.14.6 must be present. For local inference, inspect both OVMS setup dry-runs before bounded watched install/serve; `-Action verify` checks an installed root. `local_model.py probe` tests one synthetic completion. For a live coding run, pass separate `--fast-endpoint` and `--strong-endpoint` loopback URLs at `init` if their ports differ from defaults 8000 and 8001, inspect `dry-run --mode live --jev-mode fixture`, then run with `--watch` and typed `yes`. Do not reuse a run directory or replace canonical task/config/audit files; failures remain inspectable. No shipped command reconstructs a previously modified checkout, and no schedule or unattended batch exists. (JOH-1, JOH-3, JOH-4, JOH-6)
+Use `tools/prepare_verifier.ps1 -Action dry-run`, then `verify` or a watched `install` if absent, before `init` on a new empty directory, `dry-run`, and `demo`. Git and Python 3.14.6 must be present. For local inference, inspect both OVMS setup dry-runs before bounded watched install/serve; `-Action verify` checks an installed root. `local_model.py probe` tests one synthetic completion. For a live coding run, pass separate `--fast-endpoint` and `--strong-endpoint` loopback URLs at `init` if their ports differ from defaults 8000 and 8001, inspect `dry-run --mode live --jev-mode fixture`, then run with `--watch` and typed `yes`. Do not reuse a run directory or replace canonical task/config/audit files; failures remain inspectable. `orchestration_tools.py reconstruct` restores a completed run into a fresh destination without replacing its damaged checkout; no schedule or unattended batch exists. (JOH-1, JOH-3, JOH-4, JOH-6)
 
 A reviewer can run `python -B orchestrate.py --help`, `python -B local_model.py --help`, `python -B -m unittest discover -s tests -v`, then create a fresh `init`/`demo` directory and inspect its `verifier.stdout` trusted verdict, `verifier.stderr` test names, `events.jsonl` terminal state, and `replay` result. The reviewer should also run the early-zero-exit negative test and verify that it fails the run without `completed`. [B70 mapping evidence](evidence/ovms-device-map.md) supports the fast server claim; keep per-run binding, paired routing comparison, and JOH-8 superiority open. (JOH-1–JOH-8)

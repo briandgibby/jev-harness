@@ -1,0 +1,12 @@
+{
+  "status": "prepared",
+  "permit": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-restored\\records\\57a6a874-f782-4bf1-a3e5-83dd9b6fb982.json",
+  "action": {
+    "label": "fill_note",
+    "target": "note",
+    "argument": "Synthetic Jev draft"
+  },
+  "shadow": "C:\\Users\\bdgibby\\Git\\jev-harness\\evidence\\computer-use-restored\\records\\a48eccf0-6f3d-4502-b0f1-5851f86ecbf4.json",
+  "execution_authority": "rules",
+  "provider_called": false
+}

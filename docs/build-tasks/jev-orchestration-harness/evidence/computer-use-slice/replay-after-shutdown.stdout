@@ -1,0 +1,8 @@
+{
+  "status": "completed",
+  "operation": "historical_replay",
+  "ui_actions": 0,
+  "provider_calls": 0,
+  "executions_checked": 2,
+  "integrity_scope": "Consistency hashes are not signatures; records are not adversarially authenticated."
+}

@@ -17,6 +17,7 @@ The [canonical product requirements](../../PRD-Jev-Orchestration-Harness.md) and
 | JOH-6 | [Capability catalog](../../PRD-Jev-Orchestration-Harness.md#4-capability-catalog) |
 | JOH-7 | [Capability catalog](../../PRD-Jev-Orchestration-Harness.md#4-capability-catalog) |
 | JOH-8 | [Capability catalog](../../PRD-Jev-Orchestration-Harness.md#4-capability-catalog) |
+| JOH-9 | Conditional later [Jev Computer Use capability](../../PRD-Jev-Orchestration-Harness.md#4-capability-catalog); technical contract in [PRS section 11](../../PRS-Jev-Orchestration-Harness.md#11-conditional-jev-computer-use-joh-9). The authorized local browser fixture ships with rules-owned effects and offline Jev shadow responses. Real applications, hosted data, perception adapters, and active Jev selection remain future gates. |
 
 ## Success and acceptance
 

@@ -8,3 +8,11 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# Rebuilt by the pinned computer-use setup command.
+node_modules/
+# Ephemeral local RPC credential; historical replay does not need it.
+**/session.json
+
+# Generated fixture Git state; complete history is exported in fixture-repo.bundle.
+evidence/phase1-interfaces-fixture/fixture-repo/

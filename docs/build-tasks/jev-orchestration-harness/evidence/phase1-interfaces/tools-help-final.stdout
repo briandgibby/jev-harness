@@ -1,0 +1,10 @@
+usage: orchestration_tools.py [-h] {broker,verify,reconstruct} ...
+
+Direct bounded patch broker, Docker verifier, and saved-checkout
+reconstruction.
+
+positional arguments:
+  {broker,verify,reconstruct}
+
+options:
+  -h, --help            show this help message and exit

@@ -1,0 +1,13 @@
+{
+  "status": "dry_run",
+  "directory": "C:\\Users\\bdgibby\\AppData\\Local\\Temp\\tmpdmov5_ie\\absent",
+  "effects": "Generate local files; start isolated browser; enter synthetic note; save page-memory draft once; verify; shutdown.",
+  "ui_actions": 2,
+  "provider_calls": 0,
+  "writes_permitted": [
+    "note",
+    "draft"
+  ],
+  "fresh_directory_required": true
+}
+{"status": "failed", "error": "Browser service exited with code 7; inspect its stderr before reset.", "next": "Inspect retained records; correct the named input or reset into a new directory."}

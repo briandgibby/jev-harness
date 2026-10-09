@@ -1,0 +1,11 @@
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... ok
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... ok
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.411s
+
+OK

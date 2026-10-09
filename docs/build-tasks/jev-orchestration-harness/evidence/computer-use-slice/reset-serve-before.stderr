@@ -1,0 +1,27 @@
+test_reset_retains_custom_valid_configuration (tests.test_computer_use.Contracts.test_reset_retains_custom_valid_configuration) ... ERROR
+test_failed_serve_is_failed_command (tests.test_computer_use.Contracts.test_failed_serve_is_failed_command) ... FAIL
+
+======================================================================
+ERROR: test_reset_retains_custom_valid_configuration (tests.test_computer_use.Contracts.test_reset_retains_custom_valid_configuration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_computer_use.py", line 49, in test_reset_retains_custom_valid_configuration
+    ui_fixture.reset(root, output)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\bdgibby\Git\jev-harness\ui_fixture.py", line 58, in reset
+    raise UIError("Reset defaults differ from source configuration; regenerate with current defaults before proceeding.")
+ui_common.UIError: Reset defaults differ from source configuration; regenerate with current defaults before proceeding.
+
+======================================================================
+FAIL: test_failed_serve_is_failed_command (tests.test_computer_use.Contracts.test_failed_serve_is_failed_command)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_computer_use.py", line 54, in test_failed_serve_is_failed_command
+    self.assertEqual(ui_fixture.main(), 1)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.019s
+
+FAILED (failures=1, errors=1)
