@@ -1,0 +1,53 @@
+[2026-10-10 04:02:34.416][45584][modelmanager][info][servable_loading_queue.cpp:89] Started servable loading queue thread
+[2026-10-10 04:02:34.603][19212][modelmanager][info][modelmanager.cpp:252] Available devices for Open VINO: CPU, GPU.0, GPU.1, NPU
+[2026-10-10 04:02:34.612][19212][serving][info][capimodule.cpp:40] C-APIModule starting
+[2026-10-10 04:02:34.612][19212][serving][info][capimodule.cpp:42] C-APIModule started
+[2026-10-10 04:02:34.612][19212][serving][info][grpcservermodule.cpp:106] GRPCServerModule starting
+[2026-10-10 04:02:34.613][19212][serving][info][grpcservermodule.cpp:133] Binding gRPC server to address: 127.0.0.1:9001
+[2026-10-10 04:02:34.614][19212][serving][info][grpcservermodule.cpp:186] GRPCServerModule started
+[2026-10-10 04:02:34.614][19212][serving][info][grpcservermodule.cpp:187] Started gRPC server on port 9001
+[2026-10-10 04:02:34.614][19212][serving][info][httpservermodule.cpp:35] HTTPServerModule starting
+[2026-10-10 04:02:34.614][19212][serving][info][httpservermodule.cpp:39] Will start 20 REST workers
+[2026-10-10 04:02:34.615][45644][serving][info][drogon_http_server.cpp:157] Binding REST server to address: 127.0.0.1:8765
+[2026-10-10 04:02:34.667][19212][serving][info][drogon_http_server.cpp:187] REST server listening on port 8765 with 20 unary threads and 20 streaming threads
+[2026-10-10 04:02:34.667][19212][serving][info][http_server.cpp:242] API key not provided via --api_key_file or API_KEY environment variable. Authentication will be disabled.
+[2026-10-10 04:02:34.668][19212][serving][info][httpservermodule.cpp:52] HTTPServerModule started
+[2026-10-10 04:02:34.668][19212][serving][info][httpservermodule.cpp:53] Started REST server at 127.0.0.1:8765
+[2026-10-10 04:02:34.669][19212][serving][info][server.cpp:472] Graph config created in memory from model_path: C:\Users\bdgibby\AppData\Local\JevHarness\ovms-v2026.4.0-strong\model
+[2026-10-10 04:02:34.669][19212][serving][info][servablemanagermodule.cpp:51] ServableManagerModule starting
+[2026-10-10 04:02:34.670][45584][serving][info][mediapipegraphdefinition.cpp:643] MediapipeGraphDefinition initializing graph nodes
+[2026-10-10 04:02:34.671][45584][modelmanager][info][servable_initializer.cpp:661] Initializing Language Model Continuous Batching servable
+[2026-10-10 04:02:50.640][45584][llm_calculator][info][servable_initializer.cpp:228] Using manually configured tool_parser: qwen3coder
+[2026-10-10 04:02:50.672][45584][llm_calculator][warning][probe.cpp:119] Dry-run probe: template silently failed to render tool calls
+[2026-10-10 04:02:50.672][45584][llm_calculator][warning][servable_initializer.cpp:174] Minja cannot render this template's tool calls correctly
+[2026-10-10 04:02:50.673][44460][llm_executor][info][llm_executor.hpp:128] All requests: 0; Scheduled requests: 0;
+[2026-10-10 04:02:50.674][45584][modelmanager][info][mediapipegraphdefinition.cpp:300] Mediapipe: qwen3-coder-30b-a3b-int4 inputs: 
+name: input; mapping: ; shape: (); precision: UNDEFINED; layout: ...
+[2026-10-10 04:02:50.674][45584][modelmanager][info][mediapipegraphdefinition.cpp:301] Mediapipe: qwen3-coder-30b-a3b-int4 outputs: 
+name: output; mapping: ; shape: (); precision: UNDEFINED; layout: ...
+[2026-10-10 04:02:50.674][45584][modelmanager][info][mediapipegraphdefinition.cpp:302] Mediapipe: qwen3-coder-30b-a3b-int4 kfs pass through: false
+[2026-10-10 04:02:50.674][45584][modelmanager][info][pipelinedefinitionstatus.hpp:61] Mediapipe: qwen3-coder-30b-a3b-int4 state changed to: AVAILABLE after handling: ValidationPassedEvent: 
+[2026-10-10 04:02:50.674][19212][serving][info][servablemanagermodule.cpp:55] ServableManagerModule started
+[2026-10-10 04:02:50.674][40768][modelmanager][info][modelmanager.cpp:1184] Started model manager thread
+[2026-10-10 04:02:50.674][45912][modelmanager][info][modelmanager.cpp:1213] Started cleaner thread
+[2026-10-10 04:03:17.638][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 51.2% of 38.4 MB;
+[2026-10-10 04:03:17.763][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 51.2% of 38.4 MB;
+[2026-10-10 04:03:17.889][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 52.5% of 38.4 MB;
+[2026-10-10 04:03:18.016][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 52.5% of 38.4 MB;
+[2026-10-10 04:03:18.133][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 53.8% of 38.4 MB;
+[2026-10-10 04:03:18.251][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 55.0% of 38.4 MB;
+[2026-10-10 04:03:18.374][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 55.0% of 38.4 MB;
+[2026-10-10 04:03:18.480][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 56.2% of 38.4 MB;
+[2026-10-10 04:03:18.598][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 57.5% of 38.4 MB;
+[2026-10-10 04:03:18.711][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 57.5% of 38.4 MB;
+[2026-10-10 04:03:18.813][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 58.7% of 38.4 MB;
+[2026-10-10 04:03:18.927][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 58.7% of 38.4 MB;
+[2026-10-10 04:03:19.051][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 60.0% of 38.4 MB;
+[2026-10-10 04:03:19.167][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 61.2% of 38.4 MB;
+[2026-10-10 04:03:19.276][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 61.2% of 38.4 MB;
+[2026-10-10 04:03:19.395][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 62.5% of 38.4 MB;
+[2026-10-10 04:03:19.506][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 63.8% of 38.4 MB;
+[2026-10-10 04:03:19.618][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 63.8% of 38.4 MB;
+[2026-10-10 04:03:19.737][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 65.0% of 38.4 MB;
+[2026-10-10 04:03:19.849][44460][llm_executor][info][llm_executor.hpp:105] All requests: 1; Scheduled requests: 1; Cache type: dynamic, cache usage: 65.0% of 38.4 MB;
+[2026-10-10 04:03:19.870][44460][llm_executor][info][llm_executor.hpp:128] All requests: 0; Scheduled requests: 0;

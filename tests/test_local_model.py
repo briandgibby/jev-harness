@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 import sys
 import threading
 import unittest
@@ -126,6 +127,75 @@ class LocalModelTests(unittest.TestCase):
         self.assertEqual(self.call_format(response_format)["content"], "Hello.")
         self.assertEqual(json.loads(self.server.last_body)["response_format"], response_format)
         self.assertEqual(self.server.request_count, 1)
+
+    def test_capture_retains_exact_request_and_raw_response(self):
+        body = json.loads(good_body())
+        body["id"] = "provider-response-id"
+        self.server.response_body = json.dumps(body, indent=2).encode()
+        with tempfile.TemporaryDirectory() as temporary:
+            capture = Path(temporary) / "capture"
+            result = local_model.chat_completion(self.endpoint, MODEL, MESSAGES, 64, 3,
+                                                 capture_directory=capture)
+            self.assertEqual(result["content"], "Hello.")
+            self.assertEqual((capture / "request.json").read_bytes(), self.server.last_body)
+            self.assertEqual((capture / "response.body").read_bytes(), self.server.response_body)
+            metadata = json.loads((capture / "response.metadata.json").read_bytes())
+            self.assertEqual(metadata["status"], 200)
+            self.assertIs(metadata["complete"], True)
+            self.assertEqual(json.loads((capture / "response.body").read_bytes())["choices"][0]["finish_reason"], "stop")
+        self.assertEqual(self.server.request_count, 1)
+
+    def test_capture_precedes_invalid_response_and_http_error(self):
+        for status in (200, 500):
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as temporary:
+                capture = Path(temporary) / "capture"
+                self.server.response_status = status
+                self.server.response_body = SECRET_MARKER.encode()
+                error = self.assert_error("invalid_response" if status == 200 else "http_error",
+                    lambda: local_model.chat_completion(self.endpoint, MODEL, MESSAGES, 64, 3,
+                                                        capture_directory=capture))
+                self.assertEqual((capture / "response.body").read_bytes(), self.server.response_body)
+                self.assertEqual(json.loads((capture / "response.metadata.json").read_bytes())["status"], status)
+                self.assertNotIn(SECRET_MARKER, json.dumps(error.report()))
+
+    def test_capture_refuses_existing_directory_before_network(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            capture = Path(temporary)
+            sentinel = capture / "keep"
+            sentinel.write_bytes(b"original evidence")
+            self.assert_error("capture_failed", lambda: local_model.chat_completion(
+                self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=capture))
+            self.assertEqual(sentinel.read_bytes(), b"original evidence")
+        self.assertEqual(self.server.request_count, 0)
+
+    def test_capture_marks_oversized_response_as_incomplete(self):
+        self.server.response_body = b"x" * (local_model.MAX_RESPONSE_BYTES + 100)
+        with tempfile.TemporaryDirectory() as temporary:
+            capture = Path(temporary) / "capture"
+            self.assert_error("response_too_large", lambda: local_model.chat_completion(
+                self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=capture))
+            self.assertEqual((capture / "response.body").stat().st_size, local_model.MAX_RESPONSE_BYTES + 1)
+            self.assertIs(json.loads((capture / "response.metadata.json").read_bytes())["complete"], False)
+
+    def test_capture_records_connection_failure_without_retry(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            capture = Path(temporary) / "capture"
+            with patch.object(local_model.urllib.request, "build_opener") as factory:
+                factory.return_value.open.side_effect = OSError("private connection detail")
+                self.assert_error("connection_failed", lambda: local_model.chat_completion(
+                    self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=capture))
+                self.assertEqual(factory.return_value.open.call_count, 1)
+            self.assertTrue((capture / "request.json").is_file())
+            error = json.loads((capture / "transport-error.json").read_bytes())
+            self.assertEqual(error["code"], "connection_failed")
+            self.assertNotIn("private connection detail", json.dumps(error))
+
+    def test_capture_write_failure_stops_before_network(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with patch.object(local_model, "_capture_write", side_effect=OSError("disk full")):
+                self.assert_error("capture_failed", lambda: local_model.chat_completion(
+                    self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=Path(temporary) / "capture"))
+        self.assertEqual(self.server.request_count, 0)
 
     def test_invalid_response_formats_fail_before_network(self):
         valid = patch_response_format()

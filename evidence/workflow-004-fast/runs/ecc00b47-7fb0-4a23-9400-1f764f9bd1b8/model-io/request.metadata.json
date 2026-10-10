@@ -1,0 +1,1 @@
+{"bytes":2825,"headers":{"Accept":"application/json","Content-type":"application/json"},"method":"POST","phase":"before_send","sha256":"ce14f6fb7c4b86a33c6f871e72ac3e8975a84a80fe5087c11496aaeef966424a","timeout_seconds":120,"url":"http://127.0.0.1:8766/v1/chat/completions"}

@@ -1,0 +1,21 @@
+GitHub Sync preflight
+repository: C:\Users\bdgibby\Git\jev-harness
+branch: main
+head: 5ab8a344b873
+upstream: origin/main
+remote: origin
+worktree: dirty
+freshness: fetched
+remote_activity_detected: False
+fetch command: git fetch --no-tags --show-forced-updates origin
+fetch exit: 0
+fetch stdout:
+
+fetch stderr:
+
+ahead: 0
+behind: 0
+relation: synchronized
+state: dirty
+decision: STOP
+next: The branch matches its fetched upstream, but unfinished work exists. Confirm that it belongs to the current task before changing repository state.

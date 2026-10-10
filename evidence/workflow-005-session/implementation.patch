@@ -1,0 +1,534 @@
+diff --git a/local_model.py b/local_model.py
+index 591a3ca..a0b7e5c 100644
+--- a/local_model.py
++++ b/local_model.py
+@@ -9,9 +9,12 @@ host ``localhost``. The module sends one request and never retries.
+ from __future__ import annotations
+ 
+ import argparse
++import hashlib
+ import http.client
+ import json
+ import math
++import os
++from pathlib import Path
+ import re
+ import sys
+ import urllib.error
+@@ -309,9 +312,39 @@ def _validated_response(raw: bytes, model_id: str) -> dict:
+             "usage": {key: usage[key] for key in fields}}
+ 
+ 
++def _capture_write(directory: Path, name: str, raw: bytes) -> None:
++    descriptor = os.open(directory / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
++    with os.fdopen(descriptor, "wb") as stream:
++        stream.write(raw)
++        stream.flush()
++        os.fsync(stream.fileno())
++
++
++def _capture(directory: Path | None, name: str, value: bytes | dict) -> None:
++    if directory is None:
++        return
++    raw = value if isinstance(value, bytes) else json.dumps(
++        value, ensure_ascii=False, allow_nan=False, sort_keys=True,
++        separators=(",", ":")).encode("utf-8") + b"\n"
++    try:
++        _capture_write(directory, name, raw)
++    except OSError as exc:
++        raise LocalModelError("capture_failed", "The local request/response capture could not be persisted.",
++                              "Inspect the partial capture and restore writable storage; retry manually in a new directory.") from exc
++
++
++def _capture_response(directory: Path | None, status: int | None, raw: bytes, complete: bool) -> None:
++    _capture(directory, "response.body", raw)
++    _capture(directory, "response.metadata.json", {
++        "status": status, "complete": complete, "bytes": len(raw),
++        "sha256": hashlib.sha256(raw).hexdigest(), "response_limit_bytes": MAX_RESPONSE_BYTES,
++    })
++
++
+ def chat_completion(endpoint: str, model_id: str, messages: list[dict],
+                     max_tokens: int, timeout_seconds: float,
+-                    response_format: dict | None = None) -> dict:
++                    response_format: dict | None = None,
++                    *, capture_directory: Path | None = None) -> dict:
+     """Send one bounded local request and return {model, content, usage}."""
+     url = _loopback_url(endpoint)
+     payload = _validate_request(model_id, messages, max_tokens, timeout_seconds,
+@@ -319,26 +352,56 @@ def chat_completion(endpoint: str, model_id: str, messages: list[dict],
+     request = urllib.request.Request(url, data=payload, method="POST", headers={
+         "Accept": "application/json", "Content-Type": "application/json",
+     })
++    if capture_directory is not None:
++        try:
++            capture_directory = Path(capture_directory)
++            capture_directory.mkdir(exist_ok=False)
++        except (OSError, TypeError, ValueError) as exc:
++            raise LocalModelError("capture_failed", "capture_directory must be a new directory under an existing writable parent.",
++                                  "Choose an absent capture directory; existing evidence is never replaced.") from exc
++        _capture(capture_directory, "request.json", payload)
++        _capture(capture_directory, "request.metadata.json", {
++            "phase": "before_send", "method": request.get_method(), "url": url,
++            "headers": dict(request.header_items()), "timeout_seconds": timeout_seconds,
++            "bytes": len(payload), "sha256": hashlib.sha256(payload).hexdigest(),
++        })
+     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
++    status = None
+     try:
+-        with opener.open(request, timeout=timeout_seconds) as response:
+-            if response.status != 200:
+-                _fail("http_error", f"The local model returned HTTP {response.status}.",
+-                      "Check the local server endpoint and model, then retry manually.")
+-            raw = response.read(MAX_RESPONSE_BYTES + 1)
+-    except urllib.error.HTTPError as exc:
+-        exc.close()
+-        if 300 <= exc.code < 400:
+-            raise LocalModelError("redirect_blocked", "The local model endpoint returned a redirect.",
+-                                  "Use the final local chat-completions URL directly.") from None
+-        raise LocalModelError("http_error", f"The local model returned HTTP {exc.code}.",
+-                              "Check the local server endpoint and model, then retry manually.") from None
++        try:
++            with opener.open(request, timeout=timeout_seconds) as response:
++                status = response.status
++                raw = response.read(MAX_RESPONSE_BYTES + 1)
++                complete = len(raw) <= MAX_RESPONSE_BYTES and getattr(response, "length", None) in (None, 0)
++        except urllib.error.HTTPError as exc:
++            status = exc.code
++            try:
++                raw = exc.read(MAX_RESPONSE_BYTES + 1)
++                complete = len(raw) <= MAX_RESPONSE_BYTES and getattr(exc, "length", None) in (None, 0)
++            finally:
++                exc.close()
++    except http.client.IncompleteRead as exc:
++        _capture_response(capture_directory, status, exc.partial[:MAX_RESPONSE_BYTES + 1], False)
++        _capture(capture_directory, "transport-error.json", {"code": "connection_failed"})
++        raise LocalModelError("connection_failed", "The local model response ended before the HTTP body was complete.",
++                              "Inspect the incomplete capture and local server; retry manually.") from None
+     except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
++        _capture(capture_directory, "transport-error.json", {"code": "connection_failed"})
+         raise LocalModelError("connection_failed", "The local model endpoint could not be reached.",
+                               "Start the local model server and verify its loopback port.") from None
++    _capture_response(capture_directory, status, raw, complete)
++    if 300 <= status < 400:
++        _fail("redirect_blocked", "The local model endpoint returned a redirect.",
++              "Use the final local chat-completions URL directly.")
++    if status != 200:
++        _fail("http_error", f"The local model returned HTTP {status}.",
++              "Check the local server endpoint and model, then retry manually.")
+     if len(raw) > MAX_RESPONSE_BYTES:
+         _fail("response_too_large", f"The response exceeds {MAX_RESPONSE_BYTES} bytes.",
+               "Reduce max_tokens or correct the local server response.")
++    if not complete:
++        _fail("connection_failed", "The local model response ended before the HTTP body was complete.",
++              "Inspect the incomplete capture and local server; retry manually.")
+     return _validated_response(raw, model_id)
+ 
+ 
+@@ -350,12 +413,14 @@ def main(argv=None) -> int:
+     probe.add_argument("--model", required=True, help="exact local model ID")
+     probe.add_argument("--max-tokens", type=int, default=64)
+     probe.add_argument("--timeout-seconds", type=float, default=30.0)
++    probe.add_argument("--capture-directory", type=Path, help="new directory for exact bounded request/response bodies")
+     args = parser.parse_args(argv)
+     try:
+         result = chat_completion(
+             args.endpoint, args.model,
+             [{"role": "user", "content": "Reply briefly with LOCAL_MODEL_PROBE_OK."}],
+             args.max_tokens, args.timeout_seconds,
++            capture_directory=args.capture_directory,
+         )
+     except LocalModelError as exc:
+         print(json.dumps(exc.report(), sort_keys=True), file=sys.stderr)
+diff --git a/orchestrate.py b/orchestrate.py
+index 74ea9c3..f187cc4 100644
+--- a/orchestrate.py
++++ b/orchestrate.py
+@@ -480,11 +480,16 @@ def _scope(directory: Path, config: dict, task: dict, mode: str, jev_mode: str,
+                               "coding": 1, "verifier": 1}, "limits": config["limits"]}
+ 
+ 
+-def dry_run(directory: Path, mode: str, jev_mode: str, route_source: str) -> dict:
++def dry_run(directory: Path, mode: str, jev_mode: str, route_source: str,
++            input_run_dir: Path | None = None) -> dict:
+     _validate_run_modes(mode, jev_mode, route_source)
+     base, config, task, _profile, repo, _evaluator = load_state(directory)
+     _verify_base(repo, task["base_commit"])
+-    return {"status": "dry_run", "effects": _scope(base, config, task, mode, jev_mode, route_source),
++    scope = _scope(base, config, task, mode, jev_mode, route_source)
++    if input_run_dir is not None:
++        _files, source = _candidate_input(input_run_dir, config, task)
++        scope["candidate_input"] = source
++    return {"status": "dry_run", "effects": scope,
+             "notice": "No model, Git checkout, tool, or provider call was made."}
+ 
+ 
+@@ -538,15 +543,49 @@ def _route(config: dict, task: dict, eligible: list[str], decision: dict | None,
+     return route
+ 
+ 
+-def _prompt(task: dict, checkout: Path, max_bytes: int) -> list[dict]:
++def _candidate_input(run_dir: Path, config: dict, task: dict) -> tuple[list[dict], dict]:
++    """Derive prompt source from one failed run; never modify the pinned base."""
++    run_dir = run_dir.resolve()
++    replay(run_dir)
++    events = _events(run_dir)
++    parent_task = load_json(run_dir / "task.snapshot.json")
++    model_events = [event for event in events if event["event"] == "model_completed"]
++    if events[-1]["event"] != "failed" or len(model_events) != 1:
++        fail("invalid_candidate_input", "--input-run-dir must contain one failed coding attempt with a saved model output.",
++             "Choose a failed run with an inspectable candidate.")
++    for key in ("id", "base_commit", "allowed_files", "evaluator_sha256"):
++        if parent_task.get(key) != task[key]:
++            fail("invalid_candidate_input", "The failed candidate belongs to a different task or evaluator.",
++                 "Use a failed run from this pinned task and evaluator.")
++    event = model_events[0]
++    path = run_dir / "model-output.json"
++    if not path.is_file() or path.is_symlink() or file_hash(path) != event.get("output_sha256"):
++        fail("record_integrity_failed", "The failed candidate model output is missing or changed.",
++             "Restore the original protected model output before preparing another attempt.")
++    saved = load_json(path)
++    if saved.get("model") != event.get("model"):
++        fail("record_integrity_failed", "The failed candidate model differs from its event.", "Restore the original run.")
++    route = event.get("route")
++    if (route not in ROUTES or (saved.get("source") == "local_ovms" and
++                              saved["model"] != config["models"][route]["provider_model"])):
++        fail("invalid_candidate_input", "The failed candidate model differs from the registered route.",
++             "Keep the model registration unchanged or choose a matching failed run.")
++    files = _parse_patch(saved["content"], task, config["limits"]["max_patch_bytes"])
++    return files, {"run_dir": str(run_dir), "model_output_sha256": file_hash(path),
++                   "route": route, "files_sha256": digest(files)}
++
++
++def _prompt(task: dict, checkout: Path, max_bytes: int,
++            input_files: list[dict] | None = None) -> list[dict]:
+     inputs = []
++    overrides = {row["path"]: row["content"] for row in input_files or []}
+     for name in task["allowed_files"]:
+         path = _child(checkout, name, "allowed file")
+         if not path.is_file() or path.is_symlink():
+             fail("invalid_source", "An allowed source file is absent or not regular.",
+                  "Correct the task manifest or pinned base commit.")
+         try:
+-            content = path.read_text(encoding="utf-8")
++            content = overrides[name] if name in overrides else path.read_text(encoding="utf-8")
+         except (OSError, UnicodeError) as exc:
+             raise OrchestrationError("invalid_source", "An allowed source file is not readable UTF-8 text.",
+                                      "Use a text source file for this bounded experiment.") from exc
+@@ -741,10 +780,13 @@ def _trusted_verdict(path: Path) -> dict:
+ 
+ 
+ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
+-        dotenv: str | None, watch: bool, experimental_jev_route: bool) -> dict:
++        dotenv: str | None, watch: bool, experimental_jev_route: bool,
++        input_run_dir: Path | None = None) -> dict:
+     _validate_run_modes(mode, jev_mode, route_source, dotenv)
+     base, config, task, profile, repo, evaluator = load_state(directory)
+     _verify_base(repo, task["base_commit"])
++    input_files, input_source = (_candidate_input(input_run_dir, config, task)
++                                 if input_run_dir is not None else (None, None))
+     eligible = _eligible(config, task)
+     if not eligible:
+         fail("no_eligible_model", "No registered model is eligible for the task data class.",
+@@ -756,7 +798,10 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
+         if not watch or not sys.stdin.isatty():
+             fail("watch_required", "A live first-run experiment requires an interactive --watch terminal.",
+                  "Run one task with --watch in a terminal and inspect the displayed scope.")
+-        print(json.dumps(_scope(base, config, task, mode, jev_mode, route_source),
++        scope = _scope(base, config, task, mode, jev_mode, route_source)
++        if input_source is not None:
++            scope["candidate_input"] = input_source
++        print(json.dumps(scope,
+                          ensure_ascii=False, sort_keys=True), file=sys.stderr)
+         print("Run exactly this one bounded task? Type yes: ", end="", file=sys.stderr, flush=True)
+         if input().strip() != "yes":
+@@ -771,7 +816,9 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
+         write_new(run_dir / "config.snapshot.json", config)
+         write_new(run_dir / "task.snapshot.json", task)
+         ledger.add("started", task_id=task["id"], mode=mode, jev_mode=jev_mode,
+-                   route_source=route_source, config_hash=digest(config), task_hash=digest(task))
++                   route_source=route_source, config_hash=digest(config), task_hash=digest(task),
++                   **({"model_io_capture_required": True} if mode == "live" else {}),
++                   **({"candidate_input": input_source} if input_source is not None else {}))
+         try:
+             evaluator_snapshot = run_dir / "trusted-evaluator" / evaluator.name
+             snapshot_evaluator(evaluator, evaluator_snapshot, task["evaluator_sha256"],
+@@ -783,6 +830,9 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
+                           {"decision": None, "audit_path": None,
+                            "request_hash": None, "response_hash": None})
+             route = _route(config, task, eligible, jev_result["decision"], route_source)
++            if input_source is not None and route != input_source["route"]:
++                fail("invalid_candidate_input", "The selected route differs from the failed candidate model.",
++                     "Use the same route as the failed candidate for this repair attempt.")
+             ledger.add("routed", selected_route=route, source=route_source,
+                        baseline_rule=task["complexity"] if route_source == "baseline" else None,
+                        jev_decision=jev_result["decision"], jev_audit_path=jev_result["audit_path"],
+@@ -807,16 +857,18 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
+                                 "usage": None, "source": "synthetic_fixture"}
+             else:
+                 spec = config["models"][route]
+-                messages = _prompt(task, checkout, config["limits"]["max_patch_bytes"])
++                messages = _prompt(task, checkout, config["limits"]["max_patch_bytes"], input_files)
+                 response = local_model.chat_completion(spec["endpoint"], spec["provider_model"],
+                                                        messages, spec["max_output_tokens"],
+                                                        spec["timeout_seconds"],
+-                                                       response_format=_patch_response_format(task))
++                                                       response_format=_patch_response_format(task),
++                                                       capture_directory=run_dir / "model-io")
+                 model_result = {**response, "source": "local_ovms"}
+             write_new(run_dir / "model-output.json", model_result)
+             ledger.add("model_completed", route=route, model=model_result["model"],
+                        source=model_result["source"], usage=model_result["usage"],
+-                       output_sha256=file_hash(run_dir / "model-output.json"))
++                       output_sha256=file_hash(run_dir / "model-output.json"),
++                       **({"io_capture": _capture_hashes(run_dir)} if mode == "live" else {}))
+             files = _parse_patch(model_result["content"], task, config["limits"]["max_patch_bytes"])
+             hashes = _apply_patch(checkout, files)
+             artifact = {"base_commit": task["base_commit"], "files": files, "hashes": hashes,
+@@ -1181,6 +1233,10 @@ def replay(run_dir: Path, *, reconstructed_checkout: Path | None = None) -> dict
+     if selected != routed["selected_route"]:
+         fail("record_integrity_failed", "The saved route differs from recomputed policy.",
+              "Inspect the original run record.")
++    for event in events:
++        if event["event"] == "model_completed":
++            if started.get("model_io_capture_required") is True or "io_capture" in event:
++                _assert_model_capture(run_dir, config, event)
+     if record_status == "completed":
+         _assert_completed_artifacts(run_dir, config, task, events, routed,
+                                     reconstructed_checkout)
+@@ -1214,6 +1270,48 @@ def _events(run_dir: Path) -> list[dict]:
+     return [json.loads(line) for line in (run_dir / "events.jsonl").read_bytes().splitlines()]
+ 
+ 
++def _capture_hashes(run_dir: Path) -> dict:
++    hashes = {}
++    limits = {"request.json": local_model.MAX_REQUEST_BYTES,
++              "request.metadata.json": 8_192, "response.body": local_model.MAX_RESPONSE_BYTES + 1,
++              "response.metadata.json": 8_192}
++    for name, limit in limits.items():
++        path = run_dir / "model-io" / name
++        if not path.is_file() or path.is_symlink() or path.stat().st_size > limit:
++            fail("record_integrity_failed", "A required bounded model I/O capture is missing or changed.",
++                 "Inspect model-io and restore the original bodies and metadata.")
++        hashes[name] = file_hash(path)
++    return hashes
++
++
++def _assert_model_capture(run_dir: Path, config: dict, event: dict) -> None:
++    if event.get("io_capture") != _capture_hashes(run_dir):
++        fail("record_integrity_failed", "The model I/O capture differs from its recorded hashes.",
++             "Restore the original request, response, and metadata files.")
++    root = run_dir / "model-io"
++    request_raw = (root / "request.json").read_bytes()
++    response_raw = (root / "response.body").read_bytes()
++    request_meta = load_json(root / "request.metadata.json", 8_192)
++    response_meta = load_json(root / "response.metadata.json", 8_192)
++    spec = config["models"][event["route"]]
++    if (request_meta.get("sha256") != hashlib.sha256(request_raw).hexdigest() or
++            request_meta.get("bytes") != len(request_raw) or
++            request_meta.get("url") != local_model._loopback_url(spec["endpoint"]) or
++            response_meta.get("sha256") != hashlib.sha256(response_raw).hexdigest() or
++            response_meta.get("bytes") != len(response_raw) or
++            response_meta.get("status") != 200 or response_meta.get("complete") is not True):
++        fail("record_integrity_failed", "The captured body metadata is inconsistent.",
++             "Restore the original bounded model I/O evidence.")
++    try:
++        response = local_model._validated_response(response_raw, spec["provider_model"])
++        saved = load_json(run_dir / "model-output.json")
++        if any(saved.get(key) != value for key, value in response.items()):
++            raise ValueError("saved response differs")
++    except (local_model.LocalModelError, ValueError):
++        fail("record_integrity_failed", "The raw model response disagrees with the validated model output.",
++             "Restore the original raw response and model-output.json.")
++
++
+ def main(argv=None) -> int:
+     parser = argparse.ArgumentParser(description=__doc__)
+     sub = parser.add_subparsers(dest="command", required=True)
+@@ -1229,6 +1327,7 @@ def main(argv=None) -> int:
+             cmd.add_argument("--mode", choices=("fixture", "live"), required=True)
+             cmd.add_argument("--jev-mode", choices=("off", "fixture", "live"), required=True)
+             cmd.add_argument("--route-source", choices=("baseline", "jev"), default="baseline")
++            cmd.add_argument("--input-run-dir", type=Path, help="failed run whose candidate replaces only prompt file content")
+         if name == "run":
+             cmd.add_argument("--dotenv")
+             cmd.add_argument("--watch", action="store_true")
+@@ -1242,10 +1341,11 @@ def main(argv=None) -> int:
+             result = initialize(Path(args.directory), args.fast_endpoint, args.strong_endpoint,
+                                 args.fixture_complexity)
+         elif args.command == "dry-run":
+-            result = dry_run(Path(args.directory), args.mode, args.jev_mode, args.route_source)
++            result = dry_run(Path(args.directory), args.mode, args.jev_mode, args.route_source,
++                             args.input_run_dir)
+         elif args.command == "run":
+             result = run(Path(args.directory), args.mode, args.jev_mode, args.route_source,
+-                         args.dotenv, args.watch, args.experimental_jev_route)
++                         args.dotenv, args.watch, args.experimental_jev_route, args.input_run_dir)
+         elif args.command == "demo":
+             result = run(Path(args.directory), "fixture", "fixture", "baseline", None, False, False)
+         elif args.command == "inspect":
+diff --git a/tests/test_local_model.py b/tests/test_local_model.py
+index 6fe453b..1559212 100644
+--- a/tests/test_local_model.py
++++ b/tests/test_local_model.py
+@@ -7,6 +7,7 @@ import json
+ import os
+ from pathlib import Path
+ import subprocess
++import tempfile
+ import sys
+ import threading
+ import unittest
+@@ -127,6 +128,75 @@ class LocalModelTests(unittest.TestCase):
+         self.assertEqual(json.loads(self.server.last_body)["response_format"], response_format)
+         self.assertEqual(self.server.request_count, 1)
+ 
++    def test_capture_retains_exact_request_and_raw_response(self):
++        body = json.loads(good_body())
++        body["id"] = "provider-response-id"
++        self.server.response_body = json.dumps(body, indent=2).encode()
++        with tempfile.TemporaryDirectory() as temporary:
++            capture = Path(temporary) / "capture"
++            result = local_model.chat_completion(self.endpoint, MODEL, MESSAGES, 64, 3,
++                                                 capture_directory=capture)
++            self.assertEqual(result["content"], "Hello.")
++            self.assertEqual((capture / "request.json").read_bytes(), self.server.last_body)
++            self.assertEqual((capture / "response.body").read_bytes(), self.server.response_body)
++            metadata = json.loads((capture / "response.metadata.json").read_bytes())
++            self.assertEqual(metadata["status"], 200)
++            self.assertIs(metadata["complete"], True)
++            self.assertEqual(json.loads((capture / "response.body").read_bytes())["choices"][0]["finish_reason"], "stop")
++        self.assertEqual(self.server.request_count, 1)
++
++    def test_capture_precedes_invalid_response_and_http_error(self):
++        for status in (200, 500):
++            with self.subTest(status=status), tempfile.TemporaryDirectory() as temporary:
++                capture = Path(temporary) / "capture"
++                self.server.response_status = status
++                self.server.response_body = SECRET_MARKER.encode()
++                error = self.assert_error("invalid_response" if status == 200 else "http_error",
++                    lambda: local_model.chat_completion(self.endpoint, MODEL, MESSAGES, 64, 3,
++                                                        capture_directory=capture))
++                self.assertEqual((capture / "response.body").read_bytes(), self.server.response_body)
++                self.assertEqual(json.loads((capture / "response.metadata.json").read_bytes())["status"], status)
++                self.assertNotIn(SECRET_MARKER, json.dumps(error.report()))
++
++    def test_capture_refuses_existing_directory_before_network(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            capture = Path(temporary)
++            sentinel = capture / "keep"
++            sentinel.write_bytes(b"original evidence")
++            self.assert_error("capture_failed", lambda: local_model.chat_completion(
++                self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=capture))
++            self.assertEqual(sentinel.read_bytes(), b"original evidence")
++        self.assertEqual(self.server.request_count, 0)
++
++    def test_capture_marks_oversized_response_as_incomplete(self):
++        self.server.response_body = b"x" * (local_model.MAX_RESPONSE_BYTES + 100)
++        with tempfile.TemporaryDirectory() as temporary:
++            capture = Path(temporary) / "capture"
++            self.assert_error("response_too_large", lambda: local_model.chat_completion(
++                self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=capture))
++            self.assertEqual((capture / "response.body").stat().st_size, local_model.MAX_RESPONSE_BYTES + 1)
++            self.assertIs(json.loads((capture / "response.metadata.json").read_bytes())["complete"], False)
++
++    def test_capture_records_connection_failure_without_retry(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            capture = Path(temporary) / "capture"
++            with patch.object(local_model.urllib.request, "build_opener") as factory:
++                factory.return_value.open.side_effect = OSError("private connection detail")
++                self.assert_error("connection_failed", lambda: local_model.chat_completion(
++                    self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=capture))
++                self.assertEqual(factory.return_value.open.call_count, 1)
++            self.assertTrue((capture / "request.json").is_file())
++            error = json.loads((capture / "transport-error.json").read_bytes())
++            self.assertEqual(error["code"], "connection_failed")
++            self.assertNotIn("private connection detail", json.dumps(error))
++
++    def test_capture_write_failure_stops_before_network(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            with patch.object(local_model, "_capture_write", side_effect=OSError("disk full")):
++                self.assert_error("capture_failed", lambda: local_model.chat_completion(
++                    self.endpoint, MODEL, MESSAGES, 64, 3, capture_directory=Path(temporary) / "capture"))
++        self.assertEqual(self.server.request_count, 0)
++
+     def test_invalid_response_formats_fail_before_network(self):
+         valid = patch_response_format()
+         invalid = [
+diff --git a/tests/test_orchestrate.py b/tests/test_orchestrate.py
+index f00ffa1..db882a2 100644
+--- a/tests/test_orchestrate.py
++++ b/tests/test_orchestrate.py
+@@ -432,22 +432,70 @@ class OrchestrationTests(unittest.TestCase):
+         self.assertEqual(orch._events(run_dir)[-1]["event"], "failed")
+         self.assertEqual(orch._events(run_dir)[-1]["error"]["run_dir"], str(run_dir))
+ 
++    def test_failed_candidate_changes_only_prompt_file_content(self):
++        with patch.object(orch, "_verify_docker", side_effect=fake_verifier(exit_code=1)):
++            with self.assertRaises(orch.OrchestrationError) as failed:
++                orch.run(self.case, "fixture", "off", "baseline", None, False, False)
++        parent = Path(failed.exception.run_dir)
++        _, config, task, _, repo, _ = orch.load_state(self.case)
++        files, source = orch._candidate_input(parent, config, task)
++        original = orch._prompt(task, repo, config["limits"]["max_patch_bytes"])
++        repaired = orch._prompt(task, repo, config["limits"]["max_patch_bytes"], files)
++        self.assertEqual(original[0], repaired[0])
++        before, after = json.loads(original[1]["content"]), json.loads(repaired[1]["content"])
++        self.assertNotEqual(before["files"], after["files"])
++        self.assertEqual(after["files"], files)
++        after["files"] = before["files"]
++        self.assertEqual(before, after)
++        self.assertEqual(source["run_dir"], str(parent.resolve()))
++        self.assertIn("NotImplementedError", (repo / "solution.py").read_text())
++
++    def test_candidate_input_rejects_tampered_output(self):
++        with patch.object(orch, "_verify_docker", side_effect=fake_verifier(exit_code=1)):
++            with self.assertRaises(orch.OrchestrationError) as failed:
++                orch.run(self.case, "fixture", "off", "baseline", None, False, False)
++        parent = Path(failed.exception.run_dir)
++        _, config, task, _, _, _ = orch.load_state(self.case)
++        (parent / "model-output.json").write_text('{}', encoding="utf-8")
++        with self.assertRaises(orch.OrchestrationError) as context:
++            orch._candidate_input(parent, config, task)
++        self.assertEqual(context.exception.code, "record_integrity_failed")
++
+     def test_live_coding_requests_schema_for_declared_file_edits(self):
+         response = {"model": "qwen25-coder-7b-int4",
+                     "content": '{"files":[{"path":"solution.py","content":"def add(a, b):\\n    return a + b\\n"}]}',
+                     "usage": {"prompt_tokens": 10, "completion_tokens": 10, "total_tokens": 20}}
++        real_completion = orch.local_model.chat_completion
++        raw = json.dumps({"model": response["model"], "usage": response["usage"],
++                          "choices": [{"message": {"role": "assistant", "content": response["content"]},
++                                       "finish_reason": "stop"}]}).encode()
++
++        def captured_completion(*args, **kwargs):
++            with patch.object(orch.local_model.urllib.request, "build_opener") as factory:
++                reply = factory.return_value.open.return_value.__enter__.return_value
++                reply.status, reply.length = 200, 0
++                reply.read.return_value = raw
++                return real_completion(*args, **kwargs)
++
+         with (patch.object(orch.sys, "stdin", SimpleNamespace(isatty=lambda: True)),
+               patch("builtins.input", return_value="yes"),
+-              patch.object(orch.local_model, "chat_completion", return_value=response) as model,
++              patch.object(orch.local_model, "chat_completion", side_effect=captured_completion) as model,
+               patch.object(orch, "_verify_docker", side_effect=fake_verifier()),
+               redirect_stderr(io.StringIO())):
+-            orch.run(self.case, "live", "fixture", "baseline", None, True, False)
++            result = orch.run(self.case, "live", "fixture", "baseline", None, True, False)
+         output_format = model.call_args.kwargs["response_format"]
+         self.assertEqual(output_format["type"], "json_schema")
+         schema = output_format["json_schema"]["schema"]
+         self.assertEqual(schema["properties"]["files"]["items"]["properties"]["path"]["enum"],
+                          ["solution.py"])
+         self.assertIs(schema["additionalProperties"], False)
++        run_dir = Path(result["run_dir"])
++        self.assertEqual((run_dir / "model-io" / "response.body").read_bytes(), raw)
++        self.assertEqual(orch.replay(run_dir)["run_status"], "completed")
++        (run_dir / "model-io" / "request.json").write_bytes(b"{}")
++        with self.assertRaises(orch.OrchestrationError) as changed:
++            orch.replay(run_dir)
++        self.assertEqual(changed.exception.code, "record_integrity_failed")
+ 
+ 
+ class GeneratedEvaluatorContractTests(unittest.TestCase):

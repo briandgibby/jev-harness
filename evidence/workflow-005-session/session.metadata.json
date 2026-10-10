@@ -1,0 +1,18 @@
+{
+  "changed_variable": "prompt files contains the workflow-004 failed candidate; objective and feedback are unchanged",
+  "jev_mode": "off",
+  "local_model_servers_after_session": "stop both",
+  "max_docker_verifications_each": 1,
+  "max_output_tokens_each": 1024,
+  "max_repairs_each": 1,
+  "operator_authorization": "Add request and response capture, then run one bounded repair attempt for each model using its failed candidate instead of the stub. Keep everything else unchanged.",
+  "prior_task_directories_reused": true,
+  "source_commit": "5ab8a344b8731c12d1a648fc7686e0941d7aa749",
+  "source_sha256": {
+    "local_model.py": "9a5c731817c058fc4ff65cabc3f9f8bb1309aba349585a27b5a1f2d66da67b9b",
+    "orchestrate.py": "66f8da05a6b03259ac9301f7ec958873973519f467fd0712528986fca19d04af",
+    "tests/test_local_model.py": "f6298057eafdbe28733c3733024cd1461a172b88566bbdd1df4464f71d06930a",
+    "tests/test_orchestrate.py": "d14d51dd37f77763fa982b399114335aeb8e19994eec03ed1fc0e644c929adf5"
+  },
+  "timeout_seconds_each": 120
+}

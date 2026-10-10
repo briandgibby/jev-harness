@@ -1,0 +1,45 @@
+{
+  "action": "serve",
+  "model": "fast",
+  "model_pin_source": "C:\\Users\\bdgibby\\Git\\jev-harness\\model-pins.json",
+  "model_repository": "OpenVINO/Qwen2.5-Coder-7B-Instruct-int4-ov",
+  "model_revision": "25d797085dbbe41b1aa8d32bc9ab1e35b7ac10f4",
+  "model_id": "qwen25-coder-7b-int4",
+  "provider_model": "qwen25-coder-7b-int4",
+  "root": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast",
+  "root_exists": true,
+  "dry_run_writes_bytes": 0,
+  "download_bytes": 4625702767,
+  "ovms_zip_bytes": 117195695,
+  "ovms_extracted_bytes": 323472932,
+  "model_snapshot_bytes": 4508507072,
+  "model_file_count": 16,
+  "hf_cli_version": "1.24.0",
+  "minimum_free_bytes_with_download_headroom": 10531424595,
+  "install_paths": [
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\ovms.zip",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\ovms",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\model",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\model\\.cache\\huggingface",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\hf-home",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\download.stdout.log",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\download.stderr.log",
+    "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\install.json"
+  ],
+  "serve_writes": "new server stdout/stderr logs within root only; model and package stay unchanged",
+  "bind": "127.0.0.1:8766",
+  "grpc_bind": "127.0.0.1:9002",
+  "gpu_device": "GPU.1"
+}
+OpenVINO Model Server Environment Initialized
+{
+  "status": "ready",
+  "pid": 12680,
+  "model_id": "qwen25-coder-7b-int4",
+  "gpu_device": "GPU.1",
+  "models_url": "http://127.0.0.1:8766/v1/models",
+  "chat_endpoint": "http://127.0.0.1:8766/v1/chat/completions",
+  "stdout_log": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\serve-20261010T080106142Z.stdout.log",
+  "stderr_log": "C:\\Users\\bdgibby\\Documents\\Codex\\2026-09-22\\i-w\\work\\jev-harness-runtime-setup-fast\\serve-20261010T080106142Z.stderr.log"
+}

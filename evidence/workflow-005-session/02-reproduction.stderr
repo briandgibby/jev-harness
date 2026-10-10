@@ -1,0 +1,25 @@
+test_capture_retains_exact_request_and_raw_response (tests.test_local_model.LocalModelTests.test_capture_retains_exact_request_and_raw_response) ... ERROR
+test_failed_candidate_changes_only_prompt_file_content (tests.test_orchestrate.OrchestrationTests.test_failed_candidate_changes_only_prompt_file_content) ... ERROR
+
+======================================================================
+ERROR: test_capture_retains_exact_request_and_raw_response (tests.test_local_model.LocalModelTests.test_capture_retains_exact_request_and_raw_response)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_local_model.py", line 137, in test_capture_retains_exact_request_and_raw_response
+    result = local_model.chat_completion(self.endpoint, MODEL, MESSAGES, 64, 3,
+                                         capture_directory=capture)
+TypeError: chat_completion() got an unexpected keyword argument 'capture_directory'
+
+======================================================================
+ERROR: test_failed_candidate_changes_only_prompt_file_content (tests.test_orchestrate.OrchestrationTests.test_failed_candidate_changes_only_prompt_file_content)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_orchestrate.py", line 441, in test_failed_candidate_changes_only_prompt_file_content
+    files, source = orch._candidate_input(parent, config, task)
+                    ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'orchestrate' has no attribute '_candidate_input'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.880s
+
+FAILED (errors=2)

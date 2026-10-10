@@ -432,22 +432,70 @@ class OrchestrationTests(unittest.TestCase):
         self.assertEqual(orch._events(run_dir)[-1]["event"], "failed")
         self.assertEqual(orch._events(run_dir)[-1]["error"]["run_dir"], str(run_dir))
 
+    def test_failed_candidate_changes_only_prompt_file_content(self):
+        with patch.object(orch, "_verify_docker", side_effect=fake_verifier(exit_code=1)):
+            with self.assertRaises(orch.OrchestrationError) as failed:
+                orch.run(self.case, "fixture", "off", "baseline", None, False, False)
+        parent = Path(failed.exception.run_dir)
+        _, config, task, _, repo, _ = orch.load_state(self.case)
+        files, source = orch._candidate_input(parent, config, task)
+        original = orch._prompt(task, repo, config["limits"]["max_patch_bytes"])
+        repaired = orch._prompt(task, repo, config["limits"]["max_patch_bytes"], files)
+        self.assertEqual(original[0], repaired[0])
+        before, after = json.loads(original[1]["content"]), json.loads(repaired[1]["content"])
+        self.assertNotEqual(before["files"], after["files"])
+        self.assertEqual(after["files"], files)
+        after["files"] = before["files"]
+        self.assertEqual(before, after)
+        self.assertEqual(source["run_dir"], str(parent.resolve()))
+        self.assertIn("NotImplementedError", (repo / "solution.py").read_text())
+
+    def test_candidate_input_rejects_tampered_output(self):
+        with patch.object(orch, "_verify_docker", side_effect=fake_verifier(exit_code=1)):
+            with self.assertRaises(orch.OrchestrationError) as failed:
+                orch.run(self.case, "fixture", "off", "baseline", None, False, False)
+        parent = Path(failed.exception.run_dir)
+        _, config, task, _, _, _ = orch.load_state(self.case)
+        (parent / "model-output.json").write_text('{}', encoding="utf-8")
+        with self.assertRaises(orch.OrchestrationError) as context:
+            orch._candidate_input(parent, config, task)
+        self.assertEqual(context.exception.code, "record_integrity_failed")
+
     def test_live_coding_requests_schema_for_declared_file_edits(self):
         response = {"model": "qwen25-coder-7b-int4",
                     "content": '{"files":[{"path":"solution.py","content":"def add(a, b):\\n    return a + b\\n"}]}',
                     "usage": {"prompt_tokens": 10, "completion_tokens": 10, "total_tokens": 20}}
+        real_completion = orch.local_model.chat_completion
+        raw = json.dumps({"model": response["model"], "usage": response["usage"],
+                          "choices": [{"message": {"role": "assistant", "content": response["content"]},
+                                       "finish_reason": "stop"}]}).encode()
+
+        def captured_completion(*args, **kwargs):
+            with patch.object(orch.local_model.urllib.request, "build_opener") as factory:
+                reply = factory.return_value.open.return_value.__enter__.return_value
+                reply.status, reply.length = 200, 0
+                reply.read.return_value = raw
+                return real_completion(*args, **kwargs)
+
         with (patch.object(orch.sys, "stdin", SimpleNamespace(isatty=lambda: True)),
               patch("builtins.input", return_value="yes"),
-              patch.object(orch.local_model, "chat_completion", return_value=response) as model,
+              patch.object(orch.local_model, "chat_completion", side_effect=captured_completion) as model,
               patch.object(orch, "_verify_docker", side_effect=fake_verifier()),
               redirect_stderr(io.StringIO())):
-            orch.run(self.case, "live", "fixture", "baseline", None, True, False)
+            result = orch.run(self.case, "live", "fixture", "baseline", None, True, False)
         output_format = model.call_args.kwargs["response_format"]
         self.assertEqual(output_format["type"], "json_schema")
         schema = output_format["json_schema"]["schema"]
         self.assertEqual(schema["properties"]["files"]["items"]["properties"]["path"]["enum"],
                          ["solution.py"])
         self.assertIs(schema["additionalProperties"], False)
+        run_dir = Path(result["run_dir"])
+        self.assertEqual((run_dir / "model-io" / "response.body").read_bytes(), raw)
+        self.assertEqual(orch.replay(run_dir)["run_status"], "completed")
+        (run_dir / "model-io" / "request.json").write_bytes(b"{}")
+        with self.assertRaises(orch.OrchestrationError) as changed:
+            orch.replay(run_dir)
+        self.assertEqual(changed.exception.code, "record_integrity_failed")
 
 
 class GeneratedEvaluatorContractTests(unittest.TestCase):

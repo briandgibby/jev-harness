@@ -1,0 +1,45 @@
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... FAIL
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_single_interval (__main__.Acceptance.test_single_interval) ... FAIL
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... FAIL
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+======================================================================
+FAIL: test_disjoint (__main__.Acceptance.test_disjoint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/eval/test_solution.py", line 32, in test_disjoint
+    def test_disjoint(self): self.assertEqual(invoke([[5, 6], [1, 2]])[0], [[1, 2], [5, 6]])
+                                              ~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/eval/test_solution.py", line 22, in invoke
+    raise AssertionError(messages[error])
+AssertionError: each interval must be a two-element tuple
+
+======================================================================
+FAIL: test_single_interval (__main__.Acceptance.test_single_interval)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/eval/test_solution.py", line 28, in test_single_interval
+    def test_single_interval(self): self.assertEqual(invoke([[1, 2]])[0], [[1, 2]])
+                                                     ~~~~~~^^^^^^^^^^
+  File "/eval/test_solution.py", line 22, in invoke
+    raise AssertionError(messages[error])
+AssertionError: each interval must be a two-element tuple
+
+======================================================================
+FAIL: test_unmodified (__main__.Acceptance.test_unmodified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/eval/test_solution.py", line 35, in test_unmodified
+    self.assertEqual(invoke(items)[1], [items])
+                     ~~~~~~^^^^^^^
+  File "/eval/test_solution.py", line 22, in invoke
+    raise AssertionError(messages[error])
+AssertionError: each interval must be a two-element tuple
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.501s
+
+FAILED (failures=3)

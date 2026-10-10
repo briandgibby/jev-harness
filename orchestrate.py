@@ -480,11 +480,16 @@ def _scope(directory: Path, config: dict, task: dict, mode: str, jev_mode: str,
                               "coding": 1, "verifier": 1}, "limits": config["limits"]}
 
 
-def dry_run(directory: Path, mode: str, jev_mode: str, route_source: str) -> dict:
+def dry_run(directory: Path, mode: str, jev_mode: str, route_source: str,
+            input_run_dir: Path | None = None) -> dict:
     _validate_run_modes(mode, jev_mode, route_source)
     base, config, task, _profile, repo, _evaluator = load_state(directory)
     _verify_base(repo, task["base_commit"])
-    return {"status": "dry_run", "effects": _scope(base, config, task, mode, jev_mode, route_source),
+    scope = _scope(base, config, task, mode, jev_mode, route_source)
+    if input_run_dir is not None:
+        _files, source = _candidate_input(input_run_dir, config, task)
+        scope["candidate_input"] = source
+    return {"status": "dry_run", "effects": scope,
             "notice": "No model, Git checkout, tool, or provider call was made."}
 
 
@@ -538,15 +543,49 @@ def _route(config: dict, task: dict, eligible: list[str], decision: dict | None,
     return route
 
 
-def _prompt(task: dict, checkout: Path, max_bytes: int) -> list[dict]:
+def _candidate_input(run_dir: Path, config: dict, task: dict) -> tuple[list[dict], dict]:
+    """Derive prompt source from one failed run; never modify the pinned base."""
+    run_dir = run_dir.resolve()
+    replay(run_dir)
+    events = _events(run_dir)
+    parent_task = load_json(run_dir / "task.snapshot.json")
+    model_events = [event for event in events if event["event"] == "model_completed"]
+    if events[-1]["event"] != "failed" or len(model_events) != 1:
+        fail("invalid_candidate_input", "--input-run-dir must contain one failed coding attempt with a saved model output.",
+             "Choose a failed run with an inspectable candidate.")
+    for key in ("id", "base_commit", "allowed_files", "evaluator_sha256"):
+        if parent_task.get(key) != task[key]:
+            fail("invalid_candidate_input", "The failed candidate belongs to a different task or evaluator.",
+                 "Use a failed run from this pinned task and evaluator.")
+    event = model_events[0]
+    path = run_dir / "model-output.json"
+    if not path.is_file() or path.is_symlink() or file_hash(path) != event.get("output_sha256"):
+        fail("record_integrity_failed", "The failed candidate model output is missing or changed.",
+             "Restore the original protected model output before preparing another attempt.")
+    saved = load_json(path)
+    if saved.get("model") != event.get("model"):
+        fail("record_integrity_failed", "The failed candidate model differs from its event.", "Restore the original run.")
+    route = event.get("route")
+    if (route not in ROUTES or (saved.get("source") == "local_ovms" and
+                              saved["model"] != config["models"][route]["provider_model"])):
+        fail("invalid_candidate_input", "The failed candidate model differs from the registered route.",
+             "Keep the model registration unchanged or choose a matching failed run.")
+    files = _parse_patch(saved["content"], task, config["limits"]["max_patch_bytes"])
+    return files, {"run_dir": str(run_dir), "model_output_sha256": file_hash(path),
+                   "route": route, "files_sha256": digest(files)}
+
+
+def _prompt(task: dict, checkout: Path, max_bytes: int,
+            input_files: list[dict] | None = None) -> list[dict]:
     inputs = []
+    overrides = {row["path"]: row["content"] for row in input_files or []}
     for name in task["allowed_files"]:
         path = _child(checkout, name, "allowed file")
         if not path.is_file() or path.is_symlink():
             fail("invalid_source", "An allowed source file is absent or not regular.",
                  "Correct the task manifest or pinned base commit.")
         try:
-            content = path.read_text(encoding="utf-8")
+            content = overrides[name] if name in overrides else path.read_text(encoding="utf-8")
         except (OSError, UnicodeError) as exc:
             raise OrchestrationError("invalid_source", "An allowed source file is not readable UTF-8 text.",
                                      "Use a text source file for this bounded experiment.") from exc
@@ -741,10 +780,13 @@ def _trusted_verdict(path: Path) -> dict:
 
 
 def run(directory: Path, mode: str, jev_mode: str, route_source: str,
-        dotenv: str | None, watch: bool, experimental_jev_route: bool) -> dict:
+        dotenv: str | None, watch: bool, experimental_jev_route: bool,
+        input_run_dir: Path | None = None) -> dict:
     _validate_run_modes(mode, jev_mode, route_source, dotenv)
     base, config, task, profile, repo, evaluator = load_state(directory)
     _verify_base(repo, task["base_commit"])
+    input_files, input_source = (_candidate_input(input_run_dir, config, task)
+                                 if input_run_dir is not None else (None, None))
     eligible = _eligible(config, task)
     if not eligible:
         fail("no_eligible_model", "No registered model is eligible for the task data class.",
@@ -756,7 +798,10 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
         if not watch or not sys.stdin.isatty():
             fail("watch_required", "A live first-run experiment requires an interactive --watch terminal.",
                  "Run one task with --watch in a terminal and inspect the displayed scope.")
-        print(json.dumps(_scope(base, config, task, mode, jev_mode, route_source),
+        scope = _scope(base, config, task, mode, jev_mode, route_source)
+        if input_source is not None:
+            scope["candidate_input"] = input_source
+        print(json.dumps(scope,
                          ensure_ascii=False, sort_keys=True), file=sys.stderr)
         print("Run exactly this one bounded task? Type yes: ", end="", file=sys.stderr, flush=True)
         if input().strip() != "yes":
@@ -771,7 +816,9 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
         write_new(run_dir / "config.snapshot.json", config)
         write_new(run_dir / "task.snapshot.json", task)
         ledger.add("started", task_id=task["id"], mode=mode, jev_mode=jev_mode,
-                   route_source=route_source, config_hash=digest(config), task_hash=digest(task))
+                   route_source=route_source, config_hash=digest(config), task_hash=digest(task),
+                   **({"model_io_capture_required": True} if mode == "live" else {}),
+                   **({"candidate_input": input_source} if input_source is not None else {}))
         try:
             evaluator_snapshot = run_dir / "trusted-evaluator" / evaluator.name
             snapshot_evaluator(evaluator, evaluator_snapshot, task["evaluator_sha256"],
@@ -783,6 +830,9 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
                           {"decision": None, "audit_path": None,
                            "request_hash": None, "response_hash": None})
             route = _route(config, task, eligible, jev_result["decision"], route_source)
+            if input_source is not None and route != input_source["route"]:
+                fail("invalid_candidate_input", "The selected route differs from the failed candidate model.",
+                     "Use the same route as the failed candidate for this repair attempt.")
             ledger.add("routed", selected_route=route, source=route_source,
                        baseline_rule=task["complexity"] if route_source == "baseline" else None,
                        jev_decision=jev_result["decision"], jev_audit_path=jev_result["audit_path"],
@@ -807,16 +857,18 @@ def run(directory: Path, mode: str, jev_mode: str, route_source: str,
                                 "usage": None, "source": "synthetic_fixture"}
             else:
                 spec = config["models"][route]
-                messages = _prompt(task, checkout, config["limits"]["max_patch_bytes"])
+                messages = _prompt(task, checkout, config["limits"]["max_patch_bytes"], input_files)
                 response = local_model.chat_completion(spec["endpoint"], spec["provider_model"],
                                                        messages, spec["max_output_tokens"],
                                                        spec["timeout_seconds"],
-                                                       response_format=_patch_response_format(task))
+                                                       response_format=_patch_response_format(task),
+                                                       capture_directory=run_dir / "model-io")
                 model_result = {**response, "source": "local_ovms"}
             write_new(run_dir / "model-output.json", model_result)
             ledger.add("model_completed", route=route, model=model_result["model"],
                        source=model_result["source"], usage=model_result["usage"],
-                       output_sha256=file_hash(run_dir / "model-output.json"))
+                       output_sha256=file_hash(run_dir / "model-output.json"),
+                       **({"io_capture": _capture_hashes(run_dir)} if mode == "live" else {}))
             files = _parse_patch(model_result["content"], task, config["limits"]["max_patch_bytes"])
             hashes = _apply_patch(checkout, files)
             artifact = {"base_commit": task["base_commit"], "files": files, "hashes": hashes,
@@ -1181,6 +1233,10 @@ def replay(run_dir: Path, *, reconstructed_checkout: Path | None = None) -> dict
     if selected != routed["selected_route"]:
         fail("record_integrity_failed", "The saved route differs from recomputed policy.",
              "Inspect the original run record.")
+    for event in events:
+        if event["event"] == "model_completed":
+            if started.get("model_io_capture_required") is True or "io_capture" in event:
+                _assert_model_capture(run_dir, config, event)
     if record_status == "completed":
         _assert_completed_artifacts(run_dir, config, task, events, routed,
                                     reconstructed_checkout)
@@ -1214,6 +1270,48 @@ def _events(run_dir: Path) -> list[dict]:
     return [json.loads(line) for line in (run_dir / "events.jsonl").read_bytes().splitlines()]
 
 
+def _capture_hashes(run_dir: Path) -> dict:
+    hashes = {}
+    limits = {"request.json": local_model.MAX_REQUEST_BYTES,
+              "request.metadata.json": 8_192, "response.body": local_model.MAX_RESPONSE_BYTES + 1,
+              "response.metadata.json": 8_192}
+    for name, limit in limits.items():
+        path = run_dir / "model-io" / name
+        if not path.is_file() or path.is_symlink() or path.stat().st_size > limit:
+            fail("record_integrity_failed", "A required bounded model I/O capture is missing or changed.",
+                 "Inspect model-io and restore the original bodies and metadata.")
+        hashes[name] = file_hash(path)
+    return hashes
+
+
+def _assert_model_capture(run_dir: Path, config: dict, event: dict) -> None:
+    if event.get("io_capture") != _capture_hashes(run_dir):
+        fail("record_integrity_failed", "The model I/O capture differs from its recorded hashes.",
+             "Restore the original request, response, and metadata files.")
+    root = run_dir / "model-io"
+    request_raw = (root / "request.json").read_bytes()
+    response_raw = (root / "response.body").read_bytes()
+    request_meta = load_json(root / "request.metadata.json", 8_192)
+    response_meta = load_json(root / "response.metadata.json", 8_192)
+    spec = config["models"][event["route"]]
+    if (request_meta.get("sha256") != hashlib.sha256(request_raw).hexdigest() or
+            request_meta.get("bytes") != len(request_raw) or
+            request_meta.get("url") != local_model._loopback_url(spec["endpoint"]) or
+            response_meta.get("sha256") != hashlib.sha256(response_raw).hexdigest() or
+            response_meta.get("bytes") != len(response_raw) or
+            response_meta.get("status") != 200 or response_meta.get("complete") is not True):
+        fail("record_integrity_failed", "The captured body metadata is inconsistent.",
+             "Restore the original bounded model I/O evidence.")
+    try:
+        response = local_model._validated_response(response_raw, spec["provider_model"])
+        saved = load_json(run_dir / "model-output.json")
+        if any(saved.get(key) != value for key, value in response.items()):
+            raise ValueError("saved response differs")
+    except (local_model.LocalModelError, ValueError):
+        fail("record_integrity_failed", "The raw model response disagrees with the validated model output.",
+             "Restore the original raw response and model-output.json.")
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1229,6 +1327,7 @@ def main(argv=None) -> int:
             cmd.add_argument("--mode", choices=("fixture", "live"), required=True)
             cmd.add_argument("--jev-mode", choices=("off", "fixture", "live"), required=True)
             cmd.add_argument("--route-source", choices=("baseline", "jev"), default="baseline")
+            cmd.add_argument("--input-run-dir", type=Path, help="failed run whose candidate replaces only prompt file content")
         if name == "run":
             cmd.add_argument("--dotenv")
             cmd.add_argument("--watch", action="store_true")
@@ -1242,10 +1341,11 @@ def main(argv=None) -> int:
             result = initialize(Path(args.directory), args.fast_endpoint, args.strong_endpoint,
                                 args.fixture_complexity)
         elif args.command == "dry-run":
-            result = dry_run(Path(args.directory), args.mode, args.jev_mode, args.route_source)
+            result = dry_run(Path(args.directory), args.mode, args.jev_mode, args.route_source,
+                             args.input_run_dir)
         elif args.command == "run":
             result = run(Path(args.directory), args.mode, args.jev_mode, args.route_source,
-                         args.dotenv, args.watch, args.experimental_jev_route)
+                         args.dotenv, args.watch, args.experimental_jev_route, args.input_run_dir)
         elif args.command == "demo":
             result = run(Path(args.directory), "fixture", "fixture", "baseline", None, False, False)
         elif args.command == "inspect":

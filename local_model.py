@@ -9,9 +9,12 @@ host ``localhost``. The module sends one request and never retries.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import http.client
 import json
 import math
+import os
+from pathlib import Path
 import re
 import sys
 import urllib.error
@@ -309,9 +312,39 @@ def _validated_response(raw: bytes, model_id: str) -> dict:
             "usage": {key: usage[key] for key in fields}}
 
 
+def _capture_write(directory: Path, name: str, raw: bytes) -> None:
+    descriptor = os.open(directory / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "wb") as stream:
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def _capture(directory: Path | None, name: str, value: bytes | dict) -> None:
+    if directory is None:
+        return
+    raw = value if isinstance(value, bytes) else json.dumps(
+        value, ensure_ascii=False, allow_nan=False, sort_keys=True,
+        separators=(",", ":")).encode("utf-8") + b"\n"
+    try:
+        _capture_write(directory, name, raw)
+    except OSError as exc:
+        raise LocalModelError("capture_failed", "The local request/response capture could not be persisted.",
+                              "Inspect the partial capture and restore writable storage; retry manually in a new directory.") from exc
+
+
+def _capture_response(directory: Path | None, status: int | None, raw: bytes, complete: bool) -> None:
+    _capture(directory, "response.body", raw)
+    _capture(directory, "response.metadata.json", {
+        "status": status, "complete": complete, "bytes": len(raw),
+        "sha256": hashlib.sha256(raw).hexdigest(), "response_limit_bytes": MAX_RESPONSE_BYTES,
+    })
+
+
 def chat_completion(endpoint: str, model_id: str, messages: list[dict],
                     max_tokens: int, timeout_seconds: float,
-                    response_format: dict | None = None) -> dict:
+                    response_format: dict | None = None,
+                    *, capture_directory: Path | None = None) -> dict:
     """Send one bounded local request and return {model, content, usage}."""
     url = _loopback_url(endpoint)
     payload = _validate_request(model_id, messages, max_tokens, timeout_seconds,
@@ -319,26 +352,56 @@ def chat_completion(endpoint: str, model_id: str, messages: list[dict],
     request = urllib.request.Request(url, data=payload, method="POST", headers={
         "Accept": "application/json", "Content-Type": "application/json",
     })
+    if capture_directory is not None:
+        try:
+            capture_directory = Path(capture_directory)
+            capture_directory.mkdir(exist_ok=False)
+        except (OSError, TypeError, ValueError) as exc:
+            raise LocalModelError("capture_failed", "capture_directory must be a new directory under an existing writable parent.",
+                                  "Choose an absent capture directory; existing evidence is never replaced.") from exc
+        _capture(capture_directory, "request.json", payload)
+        _capture(capture_directory, "request.metadata.json", {
+            "phase": "before_send", "method": request.get_method(), "url": url,
+            "headers": dict(request.header_items()), "timeout_seconds": timeout_seconds,
+            "bytes": len(payload), "sha256": hashlib.sha256(payload).hexdigest(),
+        })
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect())
+    status = None
     try:
-        with opener.open(request, timeout=timeout_seconds) as response:
-            if response.status != 200:
-                _fail("http_error", f"The local model returned HTTP {response.status}.",
-                      "Check the local server endpoint and model, then retry manually.")
-            raw = response.read(MAX_RESPONSE_BYTES + 1)
-    except urllib.error.HTTPError as exc:
-        exc.close()
-        if 300 <= exc.code < 400:
-            raise LocalModelError("redirect_blocked", "The local model endpoint returned a redirect.",
-                                  "Use the final local chat-completions URL directly.") from None
-        raise LocalModelError("http_error", f"The local model returned HTTP {exc.code}.",
-                              "Check the local server endpoint and model, then retry manually.") from None
+        try:
+            with opener.open(request, timeout=timeout_seconds) as response:
+                status = response.status
+                raw = response.read(MAX_RESPONSE_BYTES + 1)
+                complete = len(raw) <= MAX_RESPONSE_BYTES and getattr(response, "length", None) in (None, 0)
+        except urllib.error.HTTPError as exc:
+            status = exc.code
+            try:
+                raw = exc.read(MAX_RESPONSE_BYTES + 1)
+                complete = len(raw) <= MAX_RESPONSE_BYTES and getattr(exc, "length", None) in (None, 0)
+            finally:
+                exc.close()
+    except http.client.IncompleteRead as exc:
+        _capture_response(capture_directory, status, exc.partial[:MAX_RESPONSE_BYTES + 1], False)
+        _capture(capture_directory, "transport-error.json", {"code": "connection_failed"})
+        raise LocalModelError("connection_failed", "The local model response ended before the HTTP body was complete.",
+                              "Inspect the incomplete capture and local server; retry manually.") from None
     except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError):
+        _capture(capture_directory, "transport-error.json", {"code": "connection_failed"})
         raise LocalModelError("connection_failed", "The local model endpoint could not be reached.",
                               "Start the local model server and verify its loopback port.") from None
+    _capture_response(capture_directory, status, raw, complete)
+    if 300 <= status < 400:
+        _fail("redirect_blocked", "The local model endpoint returned a redirect.",
+              "Use the final local chat-completions URL directly.")
+    if status != 200:
+        _fail("http_error", f"The local model returned HTTP {status}.",
+              "Check the local server endpoint and model, then retry manually.")
     if len(raw) > MAX_RESPONSE_BYTES:
         _fail("response_too_large", f"The response exceeds {MAX_RESPONSE_BYTES} bytes.",
               "Reduce max_tokens or correct the local server response.")
+    if not complete:
+        _fail("connection_failed", "The local model response ended before the HTTP body was complete.",
+              "Inspect the incomplete capture and local server; retry manually.")
     return _validated_response(raw, model_id)
 
 
@@ -350,12 +413,14 @@ def main(argv=None) -> int:
     probe.add_argument("--model", required=True, help="exact local model ID")
     probe.add_argument("--max-tokens", type=int, default=64)
     probe.add_argument("--timeout-seconds", type=float, default=30.0)
+    probe.add_argument("--capture-directory", type=Path, help="new directory for exact bounded request/response bodies")
     args = parser.parse_args(argv)
     try:
         result = chat_completion(
             args.endpoint, args.model,
             [{"role": "user", "content": "Reply briefly with LOCAL_MODEL_PROBE_OK."}],
             args.max_tokens, args.timeout_seconds,
+            capture_directory=args.capture_directory,
         )
     except LocalModelError as exc:
         print(json.dumps(exc.report(), sort_keys=True), file=sys.stderr)
