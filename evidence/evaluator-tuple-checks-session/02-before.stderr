@@ -1,0 +1,138 @@
+test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) ... 
+  test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='list intervals') ... FAIL
+  test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='mixed intervals') ... FAIL
+  test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='outer tuple') ... FAIL
+  test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='empty outer tuple') ... FAIL
+  test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='float endpoints') ... FAIL
+  test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='boolean endpoint') ... FAIL
+
+======================================================================
+FAIL: test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='list intervals')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_orchestrate.py", line 493, in test_json_equivalent_wrong_types_are_rejected
+    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"errors": 0, "failures": 0, "schema_version": 1, "tests_run": 6}
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... ok
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... ok
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.240s
+
+OK
+
+
+======================================================================
+FAIL: test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='mixed intervals')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_orchestrate.py", line 493, in test_json_equivalent_wrong_types_are_rejected
+    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"errors": 0, "failures": 0, "schema_version": 1, "tests_run": 6}
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... ok
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... ok
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.236s
+
+OK
+
+
+======================================================================
+FAIL: test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='outer tuple')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_orchestrate.py", line 493, in test_json_equivalent_wrong_types_are_rejected
+    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"errors": 0, "failures": 0, "schema_version": 1, "tests_run": 6}
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... ok
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... ok
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.238s
+
+OK
+
+
+======================================================================
+FAIL: test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='empty outer tuple')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_orchestrate.py", line 493, in test_json_equivalent_wrong_types_are_rejected
+    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"errors": 0, "failures": 0, "schema_version": 1, "tests_run": 6}
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... ok
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... ok
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.239s
+
+OK
+
+
+======================================================================
+FAIL: test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='float endpoints')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_orchestrate.py", line 493, in test_json_equivalent_wrong_types_are_rejected
+    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"errors": 0, "failures": 0, "schema_version": 1, "tests_run": 6}
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... ok
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... ok
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.235s
+
+OK
+
+
+======================================================================
+FAIL: test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) (name='boolean endpoint')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\bdgibby\Git\jev-harness\tests\test_orchestrate.py", line 493, in test_json_equivalent_wrong_types_are_rejected
+    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"errors": 0, "failures": 0, "schema_version": 1, "tests_run": 6}
+test_contained (__main__.Acceptance.test_contained) ... ok
+test_disjoint (__main__.Acceptance.test_disjoint) ... ok
+test_empty (__main__.Acceptance.test_empty) ... ok
+test_touching (__main__.Acceptance.test_touching) ... ok
+test_unmodified (__main__.Acceptance.test_unmodified) ... ok
+test_unsorted (__main__.Acceptance.test_unsorted) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.231s
+
+OK
+
+
+----------------------------------------------------------------------
+Ran 1 test in 2.137s
+
+FAILED (failures=6)

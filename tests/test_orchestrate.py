@@ -450,6 +450,77 @@ class OrchestrationTests(unittest.TestCase):
         self.assertIs(schema["additionalProperties"], False)
 
 
+class GeneratedEvaluatorContractTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="jev-evaluator-contract-test-")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.case = self.root / "case"
+        orch.initialize(self.case, ENDPOINT, fixture_complexity="complex")
+        self.solution = read_json(self.case / "coding-fixtures.json")["strong"]["files"][0]["content"]
+        self.calls = 0
+
+    def evaluate(self, source):
+        checkout = self.root / f"checkout-{self.calls}"
+        self.calls += 1
+        checkout.mkdir()
+        (checkout / "solution.py").write_text(source, encoding="utf-8")
+        return subprocess.run(
+            [sys.executable, "-B", str(self.case / "evaluator" / "test_solution.py"),
+             str(checkout)], capture_output=True, text=True, check=False, timeout=30)
+
+    def transformed_solution(self, expression):
+        return (self.solution.replace("def merge_intervals(", "def correct_merge_intervals(") +
+                "\ndef merge_intervals(intervals):\n    return " + expression + "\n")
+
+    def test_json_equivalent_wrong_types_are_rejected(self):
+        cases = (
+            ("list intervals", "[list(pair) for pair in correct_merge_intervals(intervals)]",
+             "two-element tuple"),
+            ("mixed intervals", "[list(pair) if index == 0 else pair for index, pair in "
+             "enumerate(correct_merge_intervals(intervals))]", "two-element tuple"),
+            ("outer tuple", "tuple(correct_merge_intervals(intervals))", "return a list"),
+            ("empty outer tuple", "correct_merge_intervals(intervals) if intervals else ()",
+             "return a list"),
+            ("float endpoints", "[tuple(float(item) for item in pair) for pair in "
+             "correct_merge_intervals(intervals)]", "integer endpoints"),
+            ("boolean endpoint", "[(True if start == 1 else start, end) for start, end in "
+             "correct_merge_intervals(intervals)]", "integer endpoints"),
+        )
+        for name, expression, message in cases:
+            with self.subTest(name=name):
+                result = self.evaluate(self.transformed_solution(expression))
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                verdict = json.loads(result.stdout)
+                self.assertGreater(verdict["failures"], 0)
+                self.assertEqual(verdict["errors"], 0)
+                self.assertIn(message, result.stderr)
+
+    def test_tuple_pair_arity_is_reported(self):
+        result = self.evaluate(self.transformed_solution(
+            "[pair + (0,) for pair in correct_merge_intervals(intervals)]"))
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("two-element tuple", result.stderr)
+
+    def test_non_json_container_has_a_contract_failure(self):
+        result = self.evaluate(self.transformed_solution(
+            "set(correct_merge_intervals(intervals))"))
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("return a list", result.stderr)
+
+    def test_single_interval_is_checked(self):
+        result = self.evaluate(self.transformed_solution(
+            "[] if len(intervals) == 1 else correct_merge_intervals(intervals)"))
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("test_single_interval", result.stderr)
+
+    def test_valid_tuple_solution_passes_every_case(self):
+        result = self.evaluate(self.solution)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout),
+                         {"schema_version": 1, "tests_run": 7, "failures": 0, "errors": 0})
+
+
 class DockerDemoIntegrationTest(unittest.TestCase):
     def test_verifier_output_file_never_exceeds_declared_cap(self):
         with tempfile.TemporaryDirectory(prefix="jev-output-cap-test-") as temporary:

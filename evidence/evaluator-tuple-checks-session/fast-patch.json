@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "content": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    # Sort intervals by their start time\n    intervals.sort(key=lambda x: x[0])\n\n    merged = [intervals[0]]\n    for current in intervals[1:]:\n        last_merged = merged[-1]\n        if current[0] <= last_merged[1]:\n            # There is an overlap, so we merge the intervals\n            merged[-1] = (last_merged[0], max(last_merged[1], current[1]))\n        else:\n            # No overlap, so we add the current interval to the merged list\n            merged.append(current)\n\n    return merged",
+      "path": "solution.py"
+    }
+  ]
+}

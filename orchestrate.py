@@ -884,12 +884,20 @@ def initialize(directory: Path, fast_endpoint: str,
     directory.mkdir(parents=True, exist_ok=True)
     repo = directory / "fixture-repo"
     repo.mkdir(exist_ok=False)
+    return_contract = "contract_error = None\n"
     if fixture_complexity == "complex":
         task_id = "fixture-merge-intervals"
         objective = ("Implement merge_intervals(intervals). Each interval is a pair of integers "
                      "(start, end) with start <= end. Return a sorted list of tuple intervals, "
                      "merging overlaps and intervals whose endpoints touch. Do not mutate the input.")
-        summary = "Single Python interval merge function with six independent edge-case checks."
+        summary = "Single Python interval merge function with seven independent edge-case checks."
+        return_contract += (
+            "if type(value) is not list:\n"
+            "    contract_error = 'return_list'\n"
+            "elif any(type(pair) is not tuple or len(pair) != 2 for pair in value):\n"
+            "    contract_error = 'tuple_pair'\n"
+            "elif any(type(endpoint) is not int for pair in value for endpoint in pair):\n"
+            "    contract_error = 'integer_endpoints'\n")
         source_text = "def merge_intervals(intervals):\n    raise NotImplementedError\n"
         solution_text = ("def merge_intervals(intervals):\n"
                          "    ordered = sorted(intervals)\n"
@@ -903,6 +911,7 @@ def initialize(directory: Path, fast_endpoint: str,
                          "    return merged\n")
         tests = (
             "    def test_empty(self): self.assertEqual(invoke([])[0], [])\n"
+            "    def test_single_interval(self): self.assertEqual(invoke([[1, 2]])[0], [[1, 2]])\n"
             "    def test_unsorted(self): self.assertEqual(invoke([[5, 7], [1, 3], [2, 6]])[0], [[1, 7]])\n"
             "    def test_touching(self): self.assertEqual(invoke([[1, 3], [3, 5]])[0], [[1, 5]])\n"
             "    def test_contained(self): self.assertEqual(invoke([[1, 8], [3, 5]])[0], [[1, 8]])\n"
@@ -951,7 +960,11 @@ def initialize(directory: Path, fast_endpoint: str,
         "spec.loader.exec_module(solution)\n"
         "args = json.load(sys.stdin)\n"
         "value = getattr(solution, sys.argv[2])(*args)\n"
-        "sys.stdout.write(json.dumps({'value': value, 'args_after': args}))\n")
+        + return_contract +
+        "if contract_error is not None:\n"
+        "    sys.stdout.write(json.dumps({'contract_error': contract_error}))\n"
+        "else:\n"
+        "    sys.stdout.write(json.dumps({'value': value, 'args_after': args}))\n")
     evaluator.write_text(
         "import json, pathlib, subprocess, sys, unittest\n"
         "root = pathlib.Path(sys.argv[1])\n"
@@ -967,6 +980,14 @@ def initialize(directory: Path, fast_endpoint: str,
         "        payload = json.loads(result.stdout)\n"
         "    except ValueError as exc:\n"
         "        raise AssertionError('candidate subprocess did not return JSON') from exc\n"
+        "    if type(payload) is dict and set(payload) == {'contract_error'}:\n"
+        "        messages = {\n"
+        "            'return_list': 'merge_intervals must return a list',\n"
+        "            'tuple_pair': 'each interval must be a two-element tuple',\n"
+        "            'integer_endpoints': 'each interval must have integer endpoints'}\n"
+        "        error = payload['contract_error']\n"
+        "        if type(error) is str and error in messages:\n"
+        "            raise AssertionError(messages[error])\n"
         "    if type(payload) is not dict or set(payload) != {'value', 'args_after'}:\n"
         "        raise AssertionError('candidate subprocess returned an invalid result')\n"
         "    return payload['value'], payload['args_after']\n"

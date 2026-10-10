@@ -1,0 +1,10 @@
+test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) ... ok
+test_non_json_container_has_a_contract_failure (test_orchestrate.GeneratedEvaluatorContractTests.test_non_json_container_has_a_contract_failure) ... ok
+test_single_interval_is_checked (test_orchestrate.GeneratedEvaluatorContractTests.test_single_interval_is_checked) ... ok
+test_tuple_pair_arity_is_reported (test_orchestrate.GeneratedEvaluatorContractTests.test_tuple_pair_arity_is_reported) ... ok
+test_valid_tuple_solution_passes_every_case (test_orchestrate.GeneratedEvaluatorContractTests.test_valid_tuple_solution_passes_every_case) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 4.709s
+
+OK

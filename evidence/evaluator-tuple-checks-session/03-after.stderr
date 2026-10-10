@@ -1,0 +1,6 @@
+test_json_equivalent_wrong_types_are_rejected (test_orchestrate.GeneratedEvaluatorContractTests.test_json_equivalent_wrong_types_are_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 2.338s
+
+OK
